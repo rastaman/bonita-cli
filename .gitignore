@@ -1,0 +1,9 @@
+.cache
+.coverage
+*.egg-info
+build
+dist
+.env
+virtualenv
+.project
+.pydevproject
