@@ -1,21 +1,25 @@
 """
-skele
+bonita
 
 Usage:
-  skele hello
-  skele -h | --help
-  skele --version
+  bonita hello
+  bonita session [login <url> <username> <password>|logout|show]
+  bonita upload <type> <file>
+  bonita system [tenant [get|pause|resume]]
+  bonita -h | --help
+  bonita --version
 
 Options:
   -h --help                         Show this screen.
   --version                         Show version.
 
 Examples:
-  skele hello
+  bonita hello
+  bonita session --action=login --username=install --password=install
 
 Help:
   For help using this tool, please open an issue on the Github repository:
-  https://github.com/rdegges/skele-cli
+  https://github.com/rastaman/bonita-cli
 """
 
 
