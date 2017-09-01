@@ -24,7 +24,11 @@ Usage
 
 You first need to open a session in Bonita, the command you'll want to run is::
 
-    $ bonita-cli session:login <username> <password>
+    $ bonita session:login <url> <username> <password>
+
+Before you leave, close your session::
+
+    $ bonita session:logout <url>
 
 If you'd like to run all tests for this project (*assuming you've written
 some*), you would run the following command::

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Packaging settings."""
 
 
@@ -33,7 +34,7 @@ class RunTests(Command):
 
 
 setup(
-    name = 'bonita-cli',
+    name = 'bonita',
     version = __version__,
     description = 'A command line client for Bonita.',
     long_description = long_description,
