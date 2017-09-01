@@ -6,7 +6,7 @@ Usage:
   bonita session [login <url> <username> <password>|logout|show]
   bonita system [tenant [get|pause|resume]]
   bonita platform [login <url> <username> <password>|logout|get|start|stop]
-  bonita upload <type> <file>
+  bonita upload <type> <filename>
   bonita -h | --help
   bonita --version
 

@@ -78,7 +78,9 @@ class Platform(Base):
         url = configuration['url']
         cookies = configuration['platform_cookies']
         payload = json.dumps({'state': state})
-        r = requests.put( url + '/API/platform/platform/unusedid', cookies=cookies, data=payload)
+        r = requests.put( url + '/API/platform/platform/unusedid', cookies=cookies, data=payload, headers={
+            'Content-Type': 'application/json'
+        })
         if r.status_code == 200:
             print('OK')
         else:
