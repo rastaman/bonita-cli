@@ -23,7 +23,7 @@ class Session(Base):
         elif self.options['show']:
             self.show()
         else:
-            print("No supported action found.")
+            print("Nothing to do.")
 
     def login(self):
         url = self.options['<url>']
@@ -42,11 +42,16 @@ class Session(Base):
                 'charset': 'utf-8'
         })
 
-        configuration = {
-            'url': url,
-            'cookies': requests.utils.dict_from_cookiejar(r.cookies)
-        }
-        self.saveConfiguration(configuration)
+        if r.status_code == 200:
+            cookies = requests.utils.dict_from_cookiejar(r.cookies)
+            #cookies.pop('JSESSIONID')
+            configuration = self.loadConfiguration()
+            configuration['url'] = url
+            configuration['cookies'] = cookies
+            self.saveConfiguration(configuration)
+            print('OK')
+        else:
+            print('KO - %d' % r.status_code)
 
     def logout(self):
         configuration = self.loadConfiguration()
@@ -57,7 +62,7 @@ class Session(Base):
         if r.status_code == 200:
             print('OK')
         else:
-            print ('KO')
+            print('KO - %d' % r.status_code)
 
     def show(self):
         configuration = self.loadConfiguration()
@@ -65,4 +70,8 @@ class Session(Base):
         cookies = configuration['cookies']
         session = requests.session()
         r = session.get( url + '/API/system/session/unusedid', cookies=cookies)
-        print(r.text)
+        if r.status_code == 200:
+            print(r.text)
+        else:
+            print('KO - %d' % r.status_code)
+

@@ -18,10 +18,17 @@ class Base(object):
         raise NotImplementedError('You must implement the run() method yourself!')
 
     def loadConfiguration(self):
-        with open( self.configurationPath ) as f:
-            configuration = pickle.load(f)
-            configuration['cookies'] = requests.utils.cookiejar_from_dict(configuration['cookies'])
-            return configuration
+        if os.path.exists( self.configurationPath ):
+            with open( self.configurationPath ) as f:
+                configuration = pickle.load(f)
+                if 'cookies' in configuration:
+                    print(configuration['cookies'])
+                    configuration['cookies'] = requests.utils.cookiejar_from_dict(configuration['cookies'])
+                if 'platform_cookies' in configuration:
+                    configuration['platform_cookies'] = requests.utils.cookiejar_from_dict(configuration['platform_cookies'])
+                return configuration
+        else:
+            return dict()
 
     def saveConfiguration(self, configuration):
         with open( self.configurationPath, 'w') as f:
