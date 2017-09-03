@@ -2,7 +2,6 @@
 
 import os
 import pickle
-import requests
 
 class Base(object):
     """A base command."""
@@ -19,20 +18,7 @@ class Base(object):
     def loadConfiguration(self):
         if os.path.exists( self.configurationPath ):
             with open( self.configurationPath ) as f:
-                configuration = pickle.load(f)
-                if 'cookies' in configuration:
-                    #print('# cookies')
-                    #print(configuration['cookies'])
-                    cookiesJar = requests.cookies.RequestsCookieJar()
-                    requests.utils.cookiejar_from_dict(configuration['cookies'], cookiejar=cookiesJar)
-                    configuration['cookies'] = cookiesJar
-                if 'platform_cookies' in configuration:
-                    print('# platform_cookies')
-                    print(configuration['platform_cookies'])
-                    platformCookiesJar = requests.cookies.RequestsCookieJar()
-                    requests.utils.cookiejar_from_dict(configuration['platform_cookies'], cookiejar=platformCookiesJar)
-                    configuration['platform_cookies'] = platformCookiesJar
-                return configuration
+                return pickle.load(f)
         else:
             return dict()
 

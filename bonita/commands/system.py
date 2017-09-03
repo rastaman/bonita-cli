@@ -18,6 +18,8 @@ class System(Base):
                 self.pauseTenant()
             elif self.options['resume']:
                 self.resumeTenant()
+        else:
+            print("Nothing to do.")
 
     def getTenant(self):
         configuration = self.loadConfiguration()
