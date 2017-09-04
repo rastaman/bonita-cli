@@ -14,8 +14,8 @@ Options:
   --version                         Show version.
 
 Examples:
-  bonita hello
-  bonita session --action=login --username=install --password=install
+  bonita session login http://myhost:8080/bonita myusername mypassword
+  bonita system tenant pause
 
 Help:
   For help using this tool, please open an issue on the Github repository:
