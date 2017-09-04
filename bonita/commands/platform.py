@@ -5,6 +5,7 @@ import requests.utils
 import json
 
 from .base import Base
+from bonita.api.bonita_client import BonitaClient
 
 
 class Platform(Base):
@@ -12,6 +13,7 @@ class Platform(Base):
 
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
+        self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.options['login']:
             self.login()
         elif self.options['start']:
@@ -30,66 +32,38 @@ class Platform(Base):
         username = self.options['<username>']
         password = self.options['<password>']
 
-        payload = {
-            'username': username,
-            'password': password,
-            'redirect': 'false'
-        }
+        rc = self.bonita_client.platformLogin(url, username, password)
 
-        r = requests.post( url + '/platformloginservice', data=payload, headers= {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'charset': 'utf-8'
-        })
-
-        if r.status_code == 200:
-            cookies = requests.utils.dict_from_cookiejar(r.cookies)
-            #cookies.pop('JSESSIONID')
-
-            configuration = self.loadConfiguration()
-            configuration['url'] = url
-            configuration['platform_cookies'] = cookies
-            self.saveConfiguration(configuration)
+        if rc == 200:
+            self.saveConfiguration(self.bonita_client.getConfiguration())
             print('OK')
         else:
-            print('KO - %d' % r.status_code)
-            print(r.text)
+            print('KO - %d' % rc)
 
     def logout(self):
-        configuration = self.loadConfiguration()
-        url = configuration['url']
-        cookies = configuration['platform_cookies']
-        session = requests.session()
-        r = session.get( url + '/platformlogoutservice?redirect=false', cookies=cookies)
-        if r.status_code == 200:
+        rc = self.bonita_client.platformLogout()
+        if rc == 200:
             print('OK')
         else:
-            print('KO - %d' % r.status_code)
+            print('KO - %d' % rc)
 
     def get(self):
-        configuration = self.loadConfiguration()
-        url = configuration['url']
-        cookies = configuration['platform_cookies']
-        r = requests.get( url + '/API/platform/platform/unusedid', cookies=cookies)
-        response = json.loads(r.text)
-        print(json.dumps(response, indent=True))
-
-    def toggleState(self, state):
-        configuration = self.loadConfiguration()
-        url = configuration['url']
-        cookies = configuration['platform_cookies']
-        payload = json.dumps({'state': state})
-        r = requests.put( url + '/API/platform/platform/unusedid', cookies=cookies, data=payload, headers={
-            'Content-Type': 'application/json'
-        })
-        if r.status_code == 200:
-            print('OK')
+        rc, datas = self.bonita_client.getPlatform()
+        if rc == 200:
+            print(datas)
         else:
-            print r.text
-            print r.status_code
-            print('KO')
+            print('KO - %d' % rc)
 
     def start(self):
-        self.toggleState('start')
+        rc = self.bonita_client.togglePlatformState('start')
+        if rc == 200:
+            print('OK')
+        else:
+            print('KO - %d' % rc)
 
     def stop(self):
-        self.toggleState('stop')
+        rc = self.bonita_client.togglePlatformState('stop')
+        if rc == 200:
+            print('OK')
+        else:
+            print('KO - %d' % rc)

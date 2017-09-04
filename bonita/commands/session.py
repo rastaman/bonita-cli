@@ -43,7 +43,7 @@ class Session(Base):
     def get(self):
         rc , datas = self.bonita_client.getSession()
         if rc == 200:
-            print('', datas)
+            print(datas)
         else:
             print('KO - %d' % rc)
 

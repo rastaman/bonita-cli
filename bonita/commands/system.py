@@ -1,9 +1,7 @@
 """The system command."""
 
-import requests
-import json
-
 from .base import Base
+from bonita.api.bonita_client import BonitaClient
 
 
 class System(Base):
@@ -11,6 +9,7 @@ class System(Base):
 
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
+        self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.options['tenant']:
             if self.options['get']:
                 self.getTenant()
@@ -22,33 +21,21 @@ class System(Base):
             print("Nothing to do.")
 
     def getTenant(self):
-        configuration = self.loadConfiguration()
-        url = configuration['url']
-        cookies = configuration['cookies']
-        session = requests.session()
-        r = session.get( url + '/API/system/tenant/unusedid', cookies=cookies)
-        print(r.text)
+        rc, datas = self.bonita_client.getCurrentTenant()
+        if rc == 200:
+            print(datas)
+        else:
+            print('KO - %d', rc)
 
     def toggleTenantState(self, state):
-        configuration = self.loadConfiguration()
-        url = configuration['url']
-        cookies = configuration['cookies']
-        headers = {
-            'X-Bonita-API-Token': configuration['token'],
-            'Content-Type': 'application/json'
-        }
-        session = requests.session()
-        payload = json.dumps({'paused': 'false'})
-        r = session.put( url + '/API/system/tenant/unusedid', cookies=cookies, headers=headers, data=payload)
-        if r.status_code == 200:
+        rc = self.bonita_client.toggleTenantState(state)
+        if rc == 200:
             print('OK')
         else:
-            print r.text
-            print r.status_code
-            print('KO')
+            print('KO - %d' % rc)
 
     def pauseTenant(self):
-        self.toggleTenantState('false')
+        self.toggleTenantState('true')
 
     def resumeTenant(self):
-        self.toggleTenantState('true')
+        self.toggleTenantState('false')

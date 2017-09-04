@@ -11,3 +11,4 @@ Try to stop a tenant:
 ```sh
 curl -b saved_cookies.txt -X PUT -H "Content-Type: application/json" -d '{"paused":"true"}' --url 'http://10.196.76.232:8080/bonita/API/system/tenant/unusedid'
 ```
+
