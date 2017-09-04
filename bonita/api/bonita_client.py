@@ -21,10 +21,40 @@ class BonitaClient:
 
     def __init__(self, configuration):
         self.configuration = configuration
+        self.url = configuration['url']
+        self.session = None
+        self.platform_session = None
 
     def getConfiguration(self):
         return self.configuration
 
+    def getInternalSession(self):
+        if self.session is None:
+            cookies = self.configuration['cookies']
+            headers = { 
+                'X-Bonita-API-Token': self.configuration['token']
+            }
+            self.session = requests.Session()
+            self.session.cookies = requests.utils.cookiejar_from_dict(cookies)
+            self.session.headers = headers
+        return self.session
+
+    def getInternalPlatformSession(self):
+        if self.platform_session is None:
+            cookies = self.configuration['platform_cookies']
+            headers = { 
+                'X-Bonita-API-Token': self.configuration['platform_token']
+            }
+            self.platform_session = requests.Session()
+            self.platform_session.cookies = requests.utils.cookiejar_from_dict(cookies)
+            self.platform_session.headers = headers
+        return self.platform_session
+
+    def formatResponse(self, response):
+        if response.text is not None and response.text != '':
+            return [response.status_code, json.dumps(json.loads(response.text), indent=True)]
+        return [response.status_code, None]
+        
     # Session API
 
     def login(self, url, username, password):
@@ -49,38 +79,25 @@ class BonitaClient:
         return r.status_code
     
     def logout(self):
-        url = self.configuration['url']
-        cookies = self.configuration['cookies']
-        r = requests.get( url + '/logoutservice', cookies=cookies)
+        r = self.getInternalSession().get( self.url + '/logoutservice')
         return r.status_code
 
     def getSession(self):
-        url = self.configuration['url']
-        cookies = self.configuration['cookies']
-        r = requests.get( url + '/API/system/session/unusedid', cookies=cookies)
-        if r.text is not None and r.text != '':
-            return [r.status_code, json.dumps(json.loads(r.text), indent=True)]        
-        return [ r.status_code, None]
+        r = self.getInternalSession().get( self.url + '/API/system/session/unusedid')
+        return self.formatResponse(r)
 
-    # Tenant API
+    # System tenant API
 
     def getCurrentTenant(self):
-        url = self.configuration['url']
-        cookies = self.configuration['cookies']
-        r = requests.get( url + '/API/system/tenant/unusedid', cookies=cookies)
-        if r.text is not None and r.text != '':
-            return [r.status_code, json.dumps(json.loads(r.text), indent=True)]
-        return [ r.status_code, None]
+        r = self.getInternalSession().get( self.url + '/API/system/tenant/unusedid')
+        return self.formatResponse(r)
 
     def toggleTenantState(self, state):
-        url = self.configuration['url']
-        cookies = self.configuration['cookies']
         headers = {
-            'X-Bonita-API-Token': self.configuration['token'],
             'Content-Type': 'application/json'
         }
         payload = json.dumps({'paused': state})
-        r = requests.put( url + '/API/system/tenant/unusedid', cookies=cookies, headers=headers, data=payload)
+        r = self.getInternalSession().put( self.url + '/API/system/tenant/unusedid', headers=headers, data=payload)
         return r.status_code
 
     # Upload API
@@ -93,15 +110,12 @@ class BonitaClient:
         if len(exts) != 0 and not extension in exts:
             msg = 'Unsupported extension %s for upload type %s (supported: %s)' % (extension, uploadType, exts)
             return [ -2, msg]
-        url = self.configuration['url']
-        cookies = self.configuration['cookies']
-        headers = { 'X-Bonita-API-Token': self.configuration['token'] }
         files = {'file': open(filename + extension, 'rb')}
-        r = requests.post(url + '/portal/' + uploadType + 'Upload', files=files, headers=headers, cookies=cookies)
-        return [r.status_code, r.text]
-    
+        r = self.getInternalSession().post(self.url + '/portal/' + uploadType + 'Upload', files=files)
+        return self.formatResponse(r)
+
     # Platform api
-    
+
     def platformLogin(self, url, username, password):
         payload = {
             'username': username,
@@ -121,27 +135,21 @@ class BonitaClient:
             self.configuration['platform_token'] = cookies['X-Bonita-API-Token']
 
         return r.status_code
-    
+
     def platformLogout(self):
-        url = self.configuration['url']
-        cookies = self.configuration['platform_cookies']
-        r = requests.get( url + '/platformlogoutservice?redirect=false', cookies=cookies)
+        r = self.getInternalPlatformSession().get( self.url + '/platformlogoutservice?redirect=false')
         return r.status_code
 
     def getPlatform(self):
-        url = self.configuration['url']
-        cookies = self.configuration['platform_cookies']
-        headers = { 'X-Bonita-API-Token': self.configuration['platform_token'] }
-        r = requests.get( url + '/API/platform/platform/unusedid', cookies=cookies, headers=headers)
-        if r.text is not None and r.text != '':
-            return [r.status_code, json.dumps(json.loads(r.text), indent=True)]
-        return [r.status_code, None]
-    
+        r = self.getInternalPlatformSession().get( self.url + '/API/platform/platform/unusedid')
+        return self.formatResponse(r)
+
     def togglePlatformState(self, state):
-        url = self.configuration['url']
-        cookies = self.configuration['platform_cookies']
         payload = json.dumps({'state': state})
-        headers = { 'X-Bonita-API-Token': self.configuration['platform_token'], 'Content-Type': 'application/json' }
-        r = requests.put( url + '/API/platform/platform/unusedid', cookies=cookies, data=payload, headers=headers)
+        headers = { 'Content-Type': 'application/json' }
+        r = self.getInternalPlatformSession().put( self.url + '/API/platform/platform/unusedid', data=payload, headers=headers)
         return r.status_code
 
+    # Process API
+    
+    
