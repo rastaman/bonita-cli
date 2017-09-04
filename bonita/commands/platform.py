@@ -1,9 +1,5 @@
 """The platform command."""
 
-import requests
-import requests.utils
-import json
-
 from .base import Base
 from bonita.api.bonita_client import BonitaClient
 

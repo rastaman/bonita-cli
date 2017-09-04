@@ -152,4 +152,23 @@ class BonitaClient:
 
     # Process API
     
+    def deployProcess(self, server_filename):
+        payload = json.dumps({'fileupload': server_filename})
+        headers = { 'Content-Type': 'application/json' }
+        r = self.getInternalSession().post( self.url + '/API/bpm/process', data=payload, headers=headers)
+        return self.formatResponse(r)
     
+    def getProcess(self, process_id):
+        r = self.getInternalSession().get( self.url + '/API/bpm/process/' + process_id)
+        return self.formatResponse(r)
+
+    def updateProcess(self, process_id, payload):
+        headers = { 'Content-Type': 'application/json' }
+        r = self.getInternalSession().put( self.url + '/API/bpm/process/' + process_id, data=payload, headers=headers)
+        return self.formatResponse(r)
+
+    def enableProcess(self, process_id):
+        return self.updateProcess(process_id, json.dumps({'activationState': 'ENABLED'}))
+
+    def disableProcess(self, process_id):
+        return self.updateProcess(process_id, json.dumps({'activationState': 'DISABLED'}))
