@@ -33,9 +33,13 @@ class System(Base):
         configuration = self.loadConfiguration()
         url = configuration['url']
         cookies = configuration['cookies']
+        headers = {
+            'X-Bonita-API-Token': configuration['token'],
+            'Content-Type': 'application/json'
+        }
         session = requests.session()
         payload = json.dumps({'paused': 'false'})
-        r = session.put( url + '/API/system/tenant/unusedid', cookies=cookies, data=payload)
+        r = session.put( url + '/API/system/tenant/unusedid', cookies=cookies, headers=headers, data=payload)
         if r.status_code == 200:
             print('OK')
         else:

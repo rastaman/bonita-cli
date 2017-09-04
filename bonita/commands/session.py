@@ -1,14 +1,8 @@
+# -*- coding: utf-8 -*-
 """The session command."""
 
-
-from json import dumps
-
 from .base import Base
-
-import os
-import requests
-import requests.utils
-import pickle
+from bonita.api.bonita_client import BonitaClient
 
 
 class Session(Base):
@@ -16,12 +10,13 @@ class Session(Base):
 
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
+        self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.options['login']:
             self.login()
         elif self.options['logout']:
             self.logout()
-        elif self.options['show']:
-            self.show()
+        elif self.options['get']:
+            self.get()
         else:
             print("Nothing to do.")
 
@@ -30,48 +25,25 @@ class Session(Base):
         username = self.options['<username>']
         password = self.options['<password>']
 
-        payload = {
-            'username': username,
-            'password': password,
-            'redirect': 'false',
-            'redirectURL': ''
-        }
+        rc = self.bonita_client.login(url, username, password)
 
-        r = requests.post( url + '/loginservice', data=payload, headers= {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'charset': 'utf-8'
-        })
-
-        if r.status_code == 200:
-            cookies = requests.utils.dict_from_cookiejar(r.cookies)
-            #cookies.pop('JSESSIONID')
-            configuration = self.loadConfiguration()
-            configuration['url'] = url
-            configuration['cookies'] = cookies
-            self.saveConfiguration(configuration)
+        if rc == 200:
+            self.saveConfiguration(self.bonita_client.getConfiguration())
             print('OK')
         else:
-            print('KO - %d' % r.status_code)
+            print('KO - %d' % rc)
 
-    def logout(self):
-        configuration = self.loadConfiguration()
-        url = configuration['url']
-        cookies = configuration['cookies']
-        session = requests.session()
-        r = session.get( url + '/logoutservice', cookies=cookies)
-        if r.status_code == 200:
+    def logout(self):        
+        rc = self.bonita_client.logout()
+        if rc == 200:
             print('OK')
         else:
-            print('KO - %d' % r.status_code)
+            print('KO - %d' % rc)
 
-    def show(self):
-        configuration = self.loadConfiguration()
-        url = configuration['url']
-        cookies = configuration['cookies']
-        session = requests.session()
-        r = session.get( url + '/API/system/session/unusedid', cookies=cookies)
-        if r.status_code == 200:
-            print(r.text)
+    def get(self):
+        rc , datas = self.bonita_client.getSession()
+        if rc == 200:
+            print('', datas)
         else:
-            print('KO - %d' % r.status_code)
+            print('KO - %d' % rc)
 

@@ -43,9 +43,9 @@ class Upload(Base):
         configuration = self.loadConfiguration()
         url = configuration['url']
         cookies = configuration['cookies']
-
+        headers = { 'X-Bonita-API-Token': configuration['token'] }
         files = {'file': open(filename + extension, 'rb')}
-        r = requests.post(url + '/portal/' + uploadType + 'Upload', files=files, cookies=cookies)
+        r = requests.post(url + '/portal/' + uploadType + 'Upload', files=files, headers=headers, cookies=cookies)
         if r.status_code == 200:
             print('OK')
             print(r.text)
