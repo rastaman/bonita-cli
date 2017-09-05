@@ -22,17 +22,11 @@ class System(Base):
 
     def getTenant(self):
         rc, datas = self.bonita_client.getCurrentTenant()
-        if rc == 200:
-            print(datas)
-        else:
-            print('KO - %d', rc)
+        self.processResults(rc, datas)
 
     def toggleTenantState(self, state):
         rc = self.bonita_client.toggleTenantState(state)
-        if rc == 200:
-            print('OK')
-        else:
-            print('KO - %d' % rc)
+        self.processResultCode(rc)
 
     def pauseTenant(self):
         self.toggleTenantState('true')

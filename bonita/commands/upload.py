@@ -17,8 +17,4 @@ class Upload(Base):
         uploadType = self.options['<type>']
         filename = self.options['<filename>']
         rc, datas = self.bonita_client.upload(uploadType, filename)
-        if rc == 200:
-            print('OK')
-            print('', datas)
-        else:
-            print('KO - %d' % rc)
+        self.processResults(rc, datas)

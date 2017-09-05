@@ -29,37 +29,23 @@ class Platform(Base):
         password = self.options['<password>']
 
         rc = self.bonita_client.platformLogin(url, username, password)
-
+        
         if rc == 200:
             self.saveConfiguration(self.bonita_client.getConfiguration())
-            print('OK')
-        else:
-            print('KO - %d' % rc)
+        self.processResultCode(rc)
 
     def logout(self):
         rc = self.bonita_client.platformLogout()
-        if rc == 200:
-            print('OK')
-        else:
-            print('KO - %d' % rc)
+        self.processResultCode(rc)
 
     def get(self):
         rc, datas = self.bonita_client.getPlatform()
-        if rc == 200:
-            print(datas)
-        else:
-            print('KO - %d' % rc)
+        self.processResults(rc, datas)
 
     def start(self):
         rc = self.bonita_client.togglePlatformState('start')
-        if rc == 200:
-            print('OK')
-        else:
-            print('KO - %d' % rc)
+        self.processResultCode(rc)
 
     def stop(self):
         rc = self.bonita_client.togglePlatformState('stop')
-        if rc == 200:
-            print('OK')
-        else:
-            print('KO - %d' % rc)
+        self.processResultCode(rc)

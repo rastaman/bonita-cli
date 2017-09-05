@@ -26,40 +26,20 @@ class Process(Base):
 
     def deploy(self):
         filename = self.options['<filename_on_server>']
-
         rc, datas = self.bonita_client.deployProcess(filename)
-
-        if rc == 200:
-            print(datas)
-        else:
-            print('KO - %d' % rc)
+        self.processResults(rc, datas)
 
     def get(self):
         process_id = self.options['<process_id>']
-
         rc, datas = self.bonita_client.getProcess(process_id)
-
-        if rc == 200:
-            print(datas)
-        else:
-            print('KO - %d' % rc)
+        self.processResults(rc, datas)
 
     def enable(self):
         process_id = self.options['<process_id>']
-
         rc, datas = self.bonita_client.enableProcess(process_id)
-
-        if rc == 200:
-            print(datas)
-        else:
-            print('KO - %d - %s' % (rc, datas) )
+        self.processResults(rc, datas)
 
     def disable(self):
         process_id = self.options['<process_id>']
-
         rc, datas = self.bonita_client.disableProcess(process_id)
-
-        if rc == 200:
-            print(datas)
-        else:
-            print('KO - %d' % rc)
+        self.processResults(rc, datas)

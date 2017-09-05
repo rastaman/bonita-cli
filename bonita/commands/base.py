@@ -11,6 +11,8 @@ class Base(object):
         self.args = args
         self.kwargs = kwargs
         self.configurationPath = os.environ['HOME'] + '/.bonita'
+        self.results = None
+        self.headless = False
 
     def run(self):
         raise NotImplementedError('You must implement the run() method yourself!')
@@ -25,3 +27,21 @@ class Base(object):
     def saveConfiguration(self, configuration):
         with open( self.configurationPath, 'w') as f:
             pickle.dump( configuration, f)
+
+    def processResults(self, rc, datas):
+        if self.headless:
+            self.results = dict(rc=rc,datas=datas)
+        else:
+            if rc == 200:
+                print(datas)
+            else:
+                print('KO - %d' % rc)
+        
+    def processResultCode(self, rc):
+        if self.headless:
+            self.results = dict(rc=rc)
+        else:
+            if rc == 200:
+                print('OK')
+            else:
+                print('KO - %d' % rc)

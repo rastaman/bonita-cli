@@ -29,21 +29,12 @@ class Session(Base):
 
         if rc == 200:
             self.saveConfiguration(self.bonita_client.getConfiguration())
-            print('OK')
-        else:
-            print('KO - %d' % rc)
+        self.processResultCode(rc)
 
     def logout(self):        
         rc = self.bonita_client.logout()
-        if rc == 200:
-            print('OK')
-        else:
-            print('KO - %d' % rc)
+        self.processResultCode(rc)
 
     def get(self):
         rc , datas = self.bonita_client.getSession()
-        if rc == 200:
-            print(datas)
-        else:
-            print('KO - %d' % rc)
-
+        self.processResults(rc, datas)
