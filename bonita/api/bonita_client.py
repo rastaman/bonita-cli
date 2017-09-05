@@ -52,7 +52,10 @@ class BonitaClient:
 
     def formatResponse(self, response):
         if response.text is not None and response.text != '':
-            return [response.status_code, json.dumps(json.loads(response.text), indent=True)]
+            try:
+                return [response.status_code, json.dumps(json.loads(response.text), indent=True)]
+            except:
+                return [response.status_code, response.text]
         return [response.status_code, None]
         
     # Session API
