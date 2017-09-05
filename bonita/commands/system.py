@@ -10,12 +10,12 @@ class System(Base):
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
         self.bonita_client = BonitaClient(self.loadConfiguration())
-        if self.options['tenant']:
-            if self.options['get']:
+        if self.hasOption('tenant'):
+            if self.hasOption('get'):
                 self.getTenant()
-            elif self.options['pause']:
+            elif self.hasOption('pause'):
                 self.pauseTenant()
-            elif self.options['resume']:
+            elif self.hasOption('resume'):
                 self.resumeTenant()
         else:
             print("Nothing to do.")

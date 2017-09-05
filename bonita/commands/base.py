@@ -45,3 +45,9 @@ class Base(object):
                 print('OK')
             else:
                 print('KO - %d' % rc)
+
+    def hasOption(self, option):
+        return option in self.options and self.options[option]
+
+    def getResults(self):
+        return self.results

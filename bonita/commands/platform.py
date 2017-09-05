@@ -10,15 +10,15 @@ class Platform(Base):
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
         self.bonita_client = BonitaClient(self.loadConfiguration())
-        if self.options['login']:
+        if self.hasOptions('login'):
             self.login()
-        elif self.options['start']:
+        elif self.hasOption('start'):
             self.start()
-        elif self.options['stop']:
+        elif self.hasOption('stop'):
             self.stop()
-        elif self.options['get']:
+        elif self.hasOption('get'):
             self.get()
-        elif self.options['logout']:
+        elif self.hasOption('logout'):
             self.logout()
         else:
             print('Nothing to do.')

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """The session command."""
 
+import json
 from .base import Base
 from bonita.api.bonita_client import BonitaClient
 
@@ -9,13 +10,13 @@ class Session(Base):
     """Manage sessions"""
 
     def run(self):
-        #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
+        #print('You supplied the following options:', json.dumps(self.options, indent=2, sort_keys=True))
         self.bonita_client = BonitaClient(self.loadConfiguration())
-        if self.options['login']:
+        if self.hasOption('login'):
             self.login()
-        elif self.options['logout']:
+        elif self.hasOption('logout'):
             self.logout()
-        elif self.options['get']:
+        elif self.hasOption('get'):
             self.get()
         else:
             print("Nothing to do.")

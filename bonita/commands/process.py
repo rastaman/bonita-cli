@@ -13,13 +13,13 @@ class Process(Base):
         #bonita process [deploy <filename_on_server>|get <process_id>|enable <process_id>|disable <process_id>]
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
         self.bonita_client = BonitaClient(self.loadConfiguration())
-        if self.options['deploy']:
+        if self.hasOption('deploy'):
             self.deploy()
-        elif self.options['get']:
+        elif self.hasOption('get'):
             self.get()
-        elif self.options['enable']:
+        elif self.hasOption('enable'):
             self.enable()
-        elif self.options['disable']:
+        elif self.hasOption('disable'):
             self.disable()
         else:
             print('Nothing to do.')
