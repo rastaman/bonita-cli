@@ -154,7 +154,7 @@ class BonitaClient:
         return r.status_code
 
     # Process API
-    
+
     def deployProcess(self, server_filename):
         payload = json.dumps({'fileupload': server_filename})
         headers = { 'Content-Type': 'application/json' }
@@ -175,3 +175,21 @@ class BonitaClient:
 
     def disableProcess(self, process_id):
         return self.updateProcess(process_id, json.dumps({'activationState': 'DISABLED'}))
+
+    # Portal API
+
+    def deployPage(self, server_filename):
+        payload = json.dumps({'pageZip': server_filename})
+        headers = { 'Content-Type': 'application/json' }
+        r = self.getInternalSession().post( self.url + '/API/portal/page ', data=payload, headers=headers)
+        return self.formatResponse(r)
+
+    def getPage(self, page_id):
+        r = self.getInternalSession().get( self.url + '/API/portal/page/' + page_id)
+        return self.formatResponse(r)
+
+    def updatePage(self, page_id, server_filename):
+        payload = json.dumps({'pageZip': server_filename})
+        headers = { 'Content-Type': 'application/json' }
+        r = self.getInternalSession().put( self.url + '/API/portal/page/' + page_id, data=payload, headers=headers)
+        return self.formatResponse(r)

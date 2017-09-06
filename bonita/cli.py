@@ -7,6 +7,7 @@ Usage:
   bonita platform [login <url> <username> <password>|logout|get|start|stop]
   bonita upload <type> <filename>
   bonita process [deploy <filename_on_server>|get <process_id>|enable <process_id>|disable <process_id>]
+  bonita portal [page [deploy <filename_on_server>|get <page_id>|update <page_id> <filename_on_server>]]
   bonita -h | --help
   bonita --version
 
