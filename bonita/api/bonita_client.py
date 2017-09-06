@@ -183,7 +183,7 @@ class BonitaClient:
     def deployPage(self, server_filename):
         payload = json.dumps({'pageZip': server_filename})
         headers = { 'Content-Type': 'application/json' }
-        r = self.getInternalSession().post( self.url + '/API/portal/page ', data=payload, headers=headers)
+        r = self.getInternalSession().post( self.url + '/API/portal/page', data=payload, headers=headers)
         return self.formatResponse(r)
 
     def getPage(self, page_id):
