@@ -21,7 +21,9 @@ class BonitaClient:
 
     def __init__(self, configuration):
         self.configuration = configuration
-        self.url = configuration['url']
+        self.url = None
+        if configuration is not None and 'url' in configuration:
+            self.url = configuration['url']
         self.session = None
         self.platform_session = None
 
