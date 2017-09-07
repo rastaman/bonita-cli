@@ -14,3 +14,5 @@ Miscellaneous links to the resources used to develop this program.
 ## Bonita REST API
 
 - [Bonita 7.5 - Multi-tenancy and tenant configuration](https://documentation.bonitasoft.com/?page=multi-tenancy-and-tenant-configuration) - Platform API
+- [Bonita 7.5 - portal API](https://documentation.bonitasoft.com/?page=portal-api) - Forms, pages, layouts...
+- [Is it possible to deploy a Bonita Application automatically ? (Organization and BDM specifically) | Bonitasoft Community](https://community.bonitasoft.com/questions-and-answers/it-possible-deploy-bonita-application-automatically-organization-and-bdm)

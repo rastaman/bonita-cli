@@ -11,14 +11,12 @@ class Organization(Base):
 
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
-        #bonita organization [import <filename>|get <organization_id>|export <organization_id>|delete]
+        #bonita organization [import <filename>|export|delete]
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('import'):
             self.importOrganization()
         elif self.hasOption('export'):
             self.exportOrganization()
-        elif self.hasOption('get'):
-            self.get()
         elif self.hasOption('delete'):
             self.delete()
         else:
@@ -29,14 +27,8 @@ class Organization(Base):
         rc, datas = self.bonita_client.importOrganization(filename)
         self.processResults(rc, datas)
 
-    def get(self):
-        organization_id = self.options['<organization_id>']
-        rc, datas = self.bonita_client.getOrganization(organization_id)
-        self.processResults(rc, datas)
-
     def exportOrganization(self):
-        organization_id = self.options['<organization_id>']
-        rc, datas = self.bonita_client.exportOrganization(organization_id)
+        rc, datas = self.bonita_client.exportOrganization()
         self.processResults(rc, datas)
 
     def delete(self):

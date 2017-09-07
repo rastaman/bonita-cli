@@ -82,6 +82,8 @@ class BonitaClient:
 
     # Utils for server API
     
+    def escapeXml(self, xml):
+        return xml.replace('<','&lt;').replace('>','&gt;').replace('"','&quot;').replace('\'','&apos;')
 
 #{
 # "user_id": "-1", 
@@ -272,11 +274,6 @@ class BonitaClient:
     # Organization API
 
     def importOrganization(self, organizationFilename):
-        #sBuilder.append(SLASH).append(applicationName).append(SERVER_API).append(apiInterfaceName).append(SLASH).append(methodName);
-        #final pOrganizationResourceName = "path/ACME.xml"
-        # final File orgFile = FileUtils.toFile(getClass().getResource(pOrganizationResourceName));
-        # final String orgContent = FileUtils.readFileToString(orgFile, CharEncoding.UTF_8);
-        # getIdentityAPI().importOrganization(orgContent);
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
@@ -284,14 +281,12 @@ class BonitaClient:
         headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
         with open(organizationFilename, 'r') as organizationFile:
             data = organizationFile.read()
-            escapedData = data.replace('<','&lt;').replace('>','&gt;').replace('"','&quot;').replace('\'','&apos;')
-            payload = "options={}&classNameParameters={}&parametersValues={}".format(
-                xmlSession,
-                BonitaClient.CLASSNAME_STRING_PARAMETER,
-                BonitaClient.VALUE_STRING_PARAMETER.format( escapedData ))
-            print "# Payload"
-            print payload
-            print "# Result"
+            escapedData = self.escapeXml(data)
+            payload = {
+                "options": xmlSession,
+                "classNameParameters": BonitaClient.CLASSNAME_STRING_PARAMETER, 
+                "parametersValues": BonitaClient.VALUE_STRING_PARAMETER.format( escapedData )
+            }
             r = self.getInternalSession().post(url, data=payload, headers=headers)
             return self.formatResponse(r)
         return 'KO'
@@ -300,11 +295,26 @@ class BonitaClient:
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
-        payload = "options={}&classNameParameters={}&parametersValues={}".format(
-            xmlSession,
-            BonitaClient.CLASSNAME_VOID_PARAMETER,
-            BonitaClient.VALUE_NULL_PARAMETER)
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
         url  = self.url + "/serverAPI/" + "org.bonitasoft.engine.api.IdentityAPI" + "/" + "deleteOrganization"
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        r = self.getInternalSession().post(url, data=payload, headers=headers)
+        return self.formatResponse(r)
+
+    def exportOrganization(self):
+        rc, raw_session = self.getSession()
+        session = json.loads(raw_session)
+        xmlSession = self.xmlSessionFromSession(session)
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
+        url  = self.url + "/serverAPI/" + "org.bonitasoft.engine.api.IdentityAPI" + "/" + "exportOrganization"
         headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
