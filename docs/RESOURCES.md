@@ -10,6 +10,10 @@ Miscellaneous links to the resources used to develop this program.
 - [Access environment variables from Python - Stack Overflow](https://stackoverflow.com/questions/4906977/access-environment-variables-from-python)
 - [rest - How to do a PUT request with curl? - Stack Overflow](https://stackoverflow.com/questions/13782198/how-to-do-a-put-request-with-curl)
 - [How do I check whether a file exists using Python? - Stack Overflow](https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists-using-python)
+- [Python binary string compatible with Java byte array (as used in SOAP web services)](https://gist.github.com/igniteflow/1237391)
+- [Is there any library to deserialize with python which is serialized with java - Stack Overflow](https://stackoverflow.com/questions/1714624/is-there-any-library-to-deserialize-with-python-which-is-serialized-with-java)
+- [The Java serialization algorithm revealed | JavaWorld](https://www.javaworld.com/article/2072752/the-java-serialization-algorithm-revealed.html)
+- [Java Object Serialization Specification: 6 - Object Serialization Stream Protocol](http://docs.oracle.com/javase/7/docs/platform/serialization/spec/protocol.html)
 
 ## Bonita REST API
 

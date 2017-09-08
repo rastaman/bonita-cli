@@ -6,3 +6,4 @@ from .process import *
 from .portal import *
 from .organization import *
 from .application import *
+from .bdm import *

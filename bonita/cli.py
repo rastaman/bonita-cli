@@ -10,6 +10,7 @@ Usage:
   bonita portal [page [deploy <filename_on_server>|get <page_id>|update <page_id> <filename_on_server>]]
   bonita application [get [<application_id>]]
   bonita organization [import <filename>|export|delete]
+  bonita bdm [install <filename>|uninstall|cleanAndUninstall|get [version|clientZip <filename>]]
   bonita -h | --help
   bonita --version
 

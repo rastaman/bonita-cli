@@ -26,6 +26,11 @@ All commands::
     $ bonita system [tenant [get|pause|resume]]
     $ bonita platform [login <url> <username> <password>|logout|get|start|stop]
     $ bonita upload <type> <filename>
+    $ bonita process [deploy <filename_on_server>|get <process_id>|enable <process_id>|disable <process_id>]
+    $ bonita portal [page [deploy <filename_on_server>|get <page_id>|update <page_id> <filename_on_server>]]
+    $ bonita application [get [<application_id>]]
+    $ bonita organization [import <filename>|export|delete]
+    $ bonita bdm [install <filename>|uninstall|cleanAndUninstall|get [version|clientZip]]
     $ bonita -h | --help
     $ bonita --version
 

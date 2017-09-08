@@ -1,7 +1,77 @@
+import base64
 import requests
 import json
 import os
+import logging
+import time
+import zipfile
+import struct
+import pickle
+try:
+    import http.client as http_client
+except ImportError:
+    # Python 2
+    import httplib as http_client
+http_client.HTTPConnection.debuglevel = 1
 
+
+class JavaObjectConstants:
+
+    STREAM_MAGIC = 0xaced
+    STREAM_VERSION = 0x05
+
+    TC_NULL = 0x70
+    TC_REFERENCE = 0x71
+    TC_CLASSDESC = 0x72
+    TC_OBJECT = 0x73
+    TC_STRING = 0x74
+    TC_ARRAY = 0x75
+    TC_CLASS = 0x76
+    TC_BLOCKDATA = 0x77
+    TC_ENDBLOCKDATA = 0x78
+    TC_RESET = 0x79
+    TC_BLOCKDATALONG = 0x7A
+    TC_EXCEPTION = 0x7B
+    TC_LONGSTRING = 0x7C
+    TC_PROXYCLASSDESC = 0x7D
+    TC_ENUM = 0x7E
+    TC_MAX = 0x7E
+
+    # classDescFlags
+    SC_WRITE_METHOD = 0x01 # if SC_SERIALIZABLE
+    SC_BLOCK_DATA = 0x08   # if SC_EXTERNALIZABLE
+    SC_SERIALIZABLE = 0x02
+    SC_EXTERNALIZABLE = 0x04
+    SC_ENUM = 0x10
+
+    # type definition chars (typecode)
+    TYPE_BYTE = 'B'     # 0x42
+    TYPE_CHAR = 'C'
+    TYPE_DOUBLE = 'D'   # 0x44
+    TYPE_FLOAT = 'F'    # 0x46
+    TYPE_INTEGER = 'I'  # 0x49
+    TYPE_LONG = 'J'     # 0x4A
+    TYPE_SHORT = 'S'    # 0x53
+    TYPE_BOOLEAN = 'Z'  # 0x5A
+    TYPE_OBJECT = 'L'   # 0x4C
+    TYPE_ARRAY = '['    # 0x5B
+
+    # list of supported typecodes listed above
+    TYPECODES_LIST = [
+            # primitive types
+            TYPE_BYTE,
+            TYPE_CHAR,
+            TYPE_DOUBLE,
+            TYPE_FLOAT,
+            TYPE_INTEGER,
+            TYPE_LONG,
+            TYPE_SHORT,
+            TYPE_BOOLEAN,
+            # object types
+            TYPE_OBJECT,
+            TYPE_ARRAY ]
+
+    BASE_REFERENCE_IDX = 0x7E0000
 
 class BonitaClient:
 
@@ -29,6 +99,12 @@ class BonitaClient:
   <list/>
 </object-stream>"""
 
+    CLASSNAME_BINARY_PARAMETER = """<object-stream>
+  <list>
+    <string>[B</string>
+  </list>
+</object-stream>"""
+
     VALUE_STRING_PARAMETER = """<object-stream>
   <object-array>
     <string>{}</string>
@@ -37,6 +113,12 @@ class BonitaClient:
 
     VALUE_NULL_PARAMETER = """<object-stream>
   <null/>
+</object-stream>"""
+
+    VALUE_BINARY_PARAMETER = """<object-stream>
+  <object-array>
+    <string>==ByteArray==</string>
+  </object-array>
 </object-stream>"""
 
     XML_SESSION_TEMPLATE = """<object-stream>
@@ -102,19 +184,9 @@ class BonitaClient:
         return [response.status_code, None]
 
     # Utils for server API
-    
+
     def escapeXml(self, xml):
         return xml.replace('<','&lt;').replace('>','&gt;').replace('"','&quot;').replace('\'','&apos;')
-
-#{
-# "user_id": "-1", 
-# "copyright": "Bonitasoft \u00a9 2017", 
-# "is_technical_user": "true", 
-# "session_id": "-2557273944136190", 
-# "version": "7.5.4", 
-# "conf": "[\"24BA6D78D0007E58F7B643DA29374D4BDCFA\",\"91C7296E408550048C52AD21719A4F54F55E\",\"DD9C4052DBEC7A93BEFBBBA3A6E51D6FCF1B\",\"4001F092E42A4017FED92758EF25627AEAF6E23C\",\"9002847FAED17E3A8CA4E5B53C4D28A3C9EBCAAD\",\"A745067BD67F498A466FC87BD13B57DD5B5DB6CE\",\"AAE57859FC0B7E133C547E7B2DCDF5C95D342C78\",\"C24B0B5D1808D6E55CEDD31A7F8295C5CB78\"]", 
-# "user_name": "install"
-#}
 
     def xmlSessionFromSession(self, session):
         xmlSession = BonitaClient.XML_SESSION_TEMPLATE.format(
@@ -123,6 +195,42 @@ class BonitaClient:
             session['user_id'],
             session['is_technical_user'])
         return xmlSession
+
+    def make_datas_java_byte_array_compatible(self,datas):
+        """ 
+        Reads in a file and converts it to a format accepted as Java byte array 
+        :param file object
+        :return string
+        """
+        encoded_data = base64.b64encode(datas)
+        strg = ''
+        for i in xrange((len(encoded_data)/40)+1):
+            strg += encoded_data[i*40:(i+1)*40]
+        return strg
+
+    def make_file_java_byte_array_compatible(self,file_obj):
+        """ 
+        Reads in a file and converts it to a format accepted as Java byte array 
+        :param file object
+        :return string
+        """
+        encoded_data = base64.b64encode(file_obj.read())
+        strg = ''
+        for i in xrange((len(encoded_data)/40)+1):
+            strg += encoded_data[i*40:(i+1)*40]
+        return strg
+
+    def java_byte_array_to_binary(self,file_obj):
+        """ 
+        Converts a java byte array to a binary stream
+        :param java byte array as string (pass in as a file like object, can use StringIO)
+        :return binary string
+        """
+        decoded_data = base64.b64decode(file_obj.read())
+        strg = ''
+        for i in xrange((len(decoded_data)/40)+1):
+            strg += decoded_data[i*40:(i+1)*40]
+        return strg
 
     # Session API
 
@@ -322,66 +430,92 @@ class BonitaClient:
 
     def installBusinessDataModel(self, zipFilename):
         rc, raw_session = self.getSession()
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
         url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "installBusinessDataModel"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
-        with open(zipFilename, 'rb') as organizationFile:
-            data = organizationFile.read()
-            escapedData = self.escapeXml(data)
-            payload = {
-                "options": xmlSession,
-                "classNameParameters": BonitaClient.CLASSNAME_STRING_PARAMETER, 
-                "parametersValues": BonitaClient.VALUE_STRING_PARAMETER.format( escapedData )
-            }
-            r = self.getInternalSession().post(url, data=payload, headers=headers)
-            return self.formatResponse(r)
-        return 'KO'
-        
-        return
-#String installBusinessDataModel(byte[] zip)
-#                         throws InvalidBusinessDataModelException,
-#                                BusinessDataRepositoryDeploymentException
-#Installs a new business data model.
-#Parameters:
-#zip - the binary content of the business object model.
-#Returns:
-#the version of the Business Data Model just deployed.
-#Throws:
-#InvalidBusinessDataModelException - if the Business Data Model content passed as parameter is invalid.
-#BusinessDataRepositoryDeploymentException - if the deployment cannot be fulfilled completely.
-    
+        headers = {}
+        STREAM_MAGIC = 0xaced
+        STREAM_VERSION = 0x05
+        # https://android.googlesource.com/platform/libcore/+/cff1616/luni/src/main/java/java/io/ObjectInputStream.java
+        # protected void readStreamHeader() throws IOException, StreamCorruptedException {
+        #if (input.readShort() == STREAM_MAGIC
+        #        && input.readShort() == STREAM_VERSION) {
+        #    return;
+        #}        
+        bdmZipfile = zipfile.ZipFile(zipFilename)
+        unzippedContent = bdmZipfile.read('bom.xml','rb')
+        datas = unicode(unzippedContent, "utf-8").encode("hex")
+        #datas = ''.join(map(lambda x: chr(x % 256), unzippedContent))
+        #print unzippedContent
+        #datas = [('0x'+elem.encode("hex")) for elem in unzippedContent]
+        #realDatas = self.make_datas_java_byte_array_compatible(unicode(unzippedContent, "utf-8"))
+        #realDatas = base64.b16decode(unzippedContent)
+        #''.join(datas)
+        #datas = self.make_datas_java_byte_array_compatible(unzippedContent)
+        #print datas
+        files = {'binaryParameter0': ('binaryParameter0', datas, 'application/octet-stream', {'Content-Transfer-Encoding': 'binary'})}
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_BINARY_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_BINARY_PARAMETER
+        }
+        r = self.getInternalSession().post(url, data=payload, files=files, headers=headers)
+        return self.formatResponse(r)
+
     def uninstallBusinessDataModel(self):
-        return
-#void uninstallBusinessDataModel()
-#                         throws BusinessDataRepositoryDeploymentException
-#Uninstalls the business data model.
-#Throws:
-#BusinessDataRepositoryDeploymentException - if the deployment cannot be fulfilled completely.
+        rc, raw_session = self.getSession()
+        xmlSession = self.xmlSessionFromSession(json.loads(raw_session))
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
+        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "uninstallBusinessDataModel"
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        r = self.getInternalSession().post(url, data=payload, headers=headers)
+        return self.formatResponse(r)
 
     def cleanAndUninstallBusinessDataModel(self):
-        return
-#void cleanAndUninstallBusinessDataModel()
-#                                 throws BusinessDataRepositoryDeploymentException
-#Deletes all business data and uninstalls the business data model.
-#Throws:
-#BusinessDataRepositoryDeploymentException - if the deployment cannot be fulfilled completely.
+        rc, raw_session = self.getSession()
+        xmlSession = self.xmlSessionFromSession(json.loads(raw_session))
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
+        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "cleanAndUninstallBusinessDataModel"
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        r = self.getInternalSession().post(url, data=payload, headers=headers)
+        return self.formatResponse(r)
 
-    def getClientBDMZip(self):
-        return
-#byte[] getClientBDMZip()
-#                throws BusinessDataRepositoryException
-#Returns:
-#zip content of the deployed client Business data model, null if no Business data model has been deployed
-#Throws:
-#BusinessDataRepositoryException - if the Business Data Model cannot be retrieved.
+    def getClientBDMZip(self, filename):
+        rc, raw_session = self.getSession()
+        xmlSession = self.xmlSessionFromSession(json.loads(raw_session))
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
+        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "cleanAndUninstallBusinessDataModel"
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        r = self.getInternalSession().post(url, data=payload, headers=headers, stream=True)
+        content = r.content
+        tarball_url = 'https://github.com/requests/requests/tarball/master'
+        r = requests.get(tarball_url, stream=True)
+        #byte[] getClientBDMZip()
+        return self.formatResponse(r)
 
     def getBusinessDataModelVersion(self):
-        return
-#String getBusinessDataModelVersion()
-#                            throws BusinessDataRepositoryException
-#Returns the current Business Data Model version, if any, or null if no Business Data Model is currently deployed.
-#Returns:
-#the current Business Data Model version, if any, or null if no Business Data Model is currently deployed
-#Throws:
-#BusinessDataRepositoryException - if the BDM version cannot be retrieved properly.        
+        rc, raw_session = self.getSession()
+        xmlSession = self.xmlSessionFromSession(json.loads(raw_session))
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
+        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "getBusinessDataModelVersion"
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        r = self.getInternalSession().post(url, data=payload, headers=headers)
+        return self.formatResponse(r)
