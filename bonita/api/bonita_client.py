@@ -1,77 +1,18 @@
-import base64
 import requests
 import json
 import os
-import logging
-import time
-import zipfile
-import struct
-import pickle
-try:
-    import http.client as http_client
-except ImportError:
-    # Python 2
-    import httplib as http_client
-http_client.HTTPConnection.debuglevel = 1
+import javaobj
 
+#try:
+#import logging
+#import time
+#    import http.client as http_client
+#except ImportError:
+#    import httplib as http_client
+#http_client.HTTPConnection.debuglevel = 1
+#logging.basicConfig(level=logging.DEBUG)
+#logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
 
-class JavaObjectConstants:
-
-    STREAM_MAGIC = 0xaced
-    STREAM_VERSION = 0x05
-
-    TC_NULL = 0x70
-    TC_REFERENCE = 0x71
-    TC_CLASSDESC = 0x72
-    TC_OBJECT = 0x73
-    TC_STRING = 0x74
-    TC_ARRAY = 0x75
-    TC_CLASS = 0x76
-    TC_BLOCKDATA = 0x77
-    TC_ENDBLOCKDATA = 0x78
-    TC_RESET = 0x79
-    TC_BLOCKDATALONG = 0x7A
-    TC_EXCEPTION = 0x7B
-    TC_LONGSTRING = 0x7C
-    TC_PROXYCLASSDESC = 0x7D
-    TC_ENUM = 0x7E
-    TC_MAX = 0x7E
-
-    # classDescFlags
-    SC_WRITE_METHOD = 0x01 # if SC_SERIALIZABLE
-    SC_BLOCK_DATA = 0x08   # if SC_EXTERNALIZABLE
-    SC_SERIALIZABLE = 0x02
-    SC_EXTERNALIZABLE = 0x04
-    SC_ENUM = 0x10
-
-    # type definition chars (typecode)
-    TYPE_BYTE = 'B'     # 0x42
-    TYPE_CHAR = 'C'
-    TYPE_DOUBLE = 'D'   # 0x44
-    TYPE_FLOAT = 'F'    # 0x46
-    TYPE_INTEGER = 'I'  # 0x49
-    TYPE_LONG = 'J'     # 0x4A
-    TYPE_SHORT = 'S'    # 0x53
-    TYPE_BOOLEAN = 'Z'  # 0x5A
-    TYPE_OBJECT = 'L'   # 0x4C
-    TYPE_ARRAY = '['    # 0x5B
-
-    # list of supported typecodes listed above
-    TYPECODES_LIST = [
-            # primitive types
-            TYPE_BYTE,
-            TYPE_CHAR,
-            TYPE_DOUBLE,
-            TYPE_FLOAT,
-            TYPE_INTEGER,
-            TYPE_LONG,
-            TYPE_SHORT,
-            TYPE_BOOLEAN,
-            # object types
-            TYPE_OBJECT,
-            TYPE_ARRAY ]
-
-    BASE_REFERENCE_IDX = 0x7E0000
 
 class BonitaClient:
 
@@ -195,42 +136,6 @@ class BonitaClient:
             session['user_id'],
             session['is_technical_user'])
         return xmlSession
-
-    def make_datas_java_byte_array_compatible(self,datas):
-        """ 
-        Reads in a file and converts it to a format accepted as Java byte array 
-        :param file object
-        :return string
-        """
-        encoded_data = base64.b64encode(datas)
-        strg = ''
-        for i in xrange((len(encoded_data)/40)+1):
-            strg += encoded_data[i*40:(i+1)*40]
-        return strg
-
-    def make_file_java_byte_array_compatible(self,file_obj):
-        """ 
-        Reads in a file and converts it to a format accepted as Java byte array 
-        :param file object
-        :return string
-        """
-        encoded_data = base64.b64encode(file_obj.read())
-        strg = ''
-        for i in xrange((len(encoded_data)/40)+1):
-            strg += encoded_data[i*40:(i+1)*40]
-        return strg
-
-    def java_byte_array_to_binary(self,file_obj):
-        """ 
-        Converts a java byte array to a binary stream
-        :param java byte array as string (pass in as a file like object, can use StringIO)
-        :return binary string
-        """
-        decoded_data = base64.b64decode(file_obj.read())
-        strg = ''
-        for i in xrange((len(decoded_data)/40)+1):
-            strg += decoded_data[i*40:(i+1)*40]
-        return strg
 
     # Session API
 
@@ -430,32 +335,18 @@ class BonitaClient:
 
     def installBusinessDataModel(self, zipFilename):
         rc, raw_session = self.getSession()
-        logging.basicConfig(level=logging.DEBUG)
-        logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
         url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "installBusinessDataModel"
         headers = {}
-        STREAM_MAGIC = 0xaced
-        STREAM_VERSION = 0x05
-        # https://android.googlesource.com/platform/libcore/+/cff1616/luni/src/main/java/java/io/ObjectInputStream.java
-        # protected void readStreamHeader() throws IOException, StreamCorruptedException {
-        #if (input.readShort() == STREAM_MAGIC
-        #        && input.readShort() == STREAM_VERSION) {
-        #    return;
-        #}        
-        bdmZipfile = zipfile.ZipFile(zipFilename)
-        unzippedContent = bdmZipfile.read('bom.xml','rb')
-        datas = unicode(unzippedContent, "utf-8").encode("hex")
-        #datas = ''.join(map(lambda x: chr(x % 256), unzippedContent))
-        #print unzippedContent
-        #datas = [('0x'+elem.encode("hex")) for elem in unzippedContent]
-        #realDatas = self.make_datas_java_byte_array_compatible(unicode(unzippedContent, "utf-8"))
-        #realDatas = base64.b16decode(unzippedContent)
-        #''.join(datas)
-        #datas = self.make_datas_java_byte_array_compatible(unzippedContent)
-        #print datas
-        files = {'binaryParameter0': ('binaryParameter0', datas, 'application/octet-stream', {'Content-Transfer-Encoding': 'binary'})}
+        with open(zipFilename, 'rb') as zippedFile:
+            zipDatas = zippedFile.read()
+            javaarray = javaobj.JavaByteArray(zipDatas, classdesc=javaobj.ByteArrayDesc())
+            datas = javaobj.dumps(javaarray)
+            with open('/tmp/datas.ser', 'wb') as writefile:
+                writefile.write(datas)
+                writefile.close()
+        files = {'binaryParameter0': ('binaryParameter0', open('/tmp/datas.ser','rb'), 'application/octet-stream', {'Content-Transfer-Encoding': 'binary'})}
         payload = {
             "options": xmlSession,
             "classNameParameters": BonitaClient.CLASSNAME_BINARY_PARAMETER,
