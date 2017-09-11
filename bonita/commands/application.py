@@ -3,6 +3,7 @@
 from json import dumps
 from .base import Base
 from bonita.api.bonita_client import BonitaClient
+from wsgiref.util import application_uri
 
 
 class Application(Base):
@@ -15,10 +16,12 @@ class Application(Base):
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('get'):
             self.get()
-        #elif self.hasOption('get'):
-        #    self.get()
-        #elif self.hasOption('update'):
-        #    self.enable()
+        elif self.hasOption('create'):
+            self.create()
+        elif self.hasOption('update'):
+            self.update()
+        elif self.hasOption('delete'):
+            self.delete()
         else:
             print('Nothing to do.')
 
@@ -27,4 +30,22 @@ class Application(Base):
         if application_id is None:
             rc, datas = self.bonita_client.getApplications()
             self.processResults(rc, datas)
+        else:
+            rc, datas = self.bonita_client.getApplication(application_id)
+            self.processResults(rc, datas)
 
+    def create(self):
+        filename = self.options['<filename>']
+        rc, datas = self.bonita_client.createApplication( filename )
+        self.processResults(rc, datas)
+
+    def update(self):
+        application_id = self.options['<application_id>']
+        filename = self.options['<filename>']
+        rc, datas = self.bonita_client.updateApplication( application_id, filename)
+        self.processResults(rc, datas)
+
+    def delete(self):
+        application_id = self.options['<application_id>']
+        rc, datas = self.bonita_client.deleteApplication(application_id)
+        self.processResults(rc, datas)

@@ -14,6 +14,7 @@ Miscellaneous links to the resources used to develop this program.
 - [Is there any library to deserialize with python which is serialized with java - Stack Overflow](https://stackoverflow.com/questions/1714624/is-there-any-library-to-deserialize-with-python-which-is-serialized-with-java)
 - [The Java serialization algorithm revealed | JavaWorld](https://www.javaworld.com/article/2072752/the-java-serialization-algorithm-revealed.html)
 - [Java Object Serialization Specification: 6 - Object Serialization Stream Protocol](http://docs.oracle.com/javase/7/docs/platform/serialization/spec/protocol.html)
+- [Issue 2857: Add "java modified utf-8" codec - Python tracker](https://bugs.python.org/issue2857)
 
 ## Bonita REST API
 

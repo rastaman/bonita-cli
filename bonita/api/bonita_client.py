@@ -283,6 +283,31 @@ class BonitaClient:
         r = self.getInternalSession().get( self.url + '/API/living/application', params=params)
         return self.formatResponse(r)
 
+    def getApplication(self, application_id):
+        r = self.getInternalSession().get( self.url + '/API/living/application/' + application_id)
+        return self.formatResponse(r)
+
+    def createApplication(self, filename):
+        with open(filename, 'r') as application_file:
+            datas = application_file.read()
+            application_file.close()
+            r = self.getInternalSession().post( self.url + '/API/living/application', data=datas)
+            print r.content
+            return self.formatResponse(r)
+        pass
+
+    def updateApplication(self, application_id, filename):
+        with open(filename, 'r') as application_file:
+            datas = application_file.read()
+            application_file.close()
+            r = self.getInternalSession().put( self.url + '/API/living/application/' + application_id, data=datas)
+            return self.formatResponse(r)
+        pass
+
+    def deleteApplication(self, application_id):
+        r = self.getInternalSession().delete( self.url + '/API/living/application/' + application_id)
+        return self.formatResponse(r)
+
     # Organization API
 
     def importOrganization(self, organizationFilename):
@@ -393,9 +418,10 @@ class BonitaClient:
         headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
         r = self.getInternalSession().post(url, data=payload, headers=headers, stream=True)
         content = r.content
-        tarball_url = 'https://github.com/requests/requests/tarball/master'
-        r = requests.get(tarball_url, stream=True)
-        #byte[] getClientBDMZip()
+        #Oups, it's not the zip file
+        with open(filename, 'wb') as clientZipFile:
+            clientZipFile.write(content)
+            clientZipFile.close()
         return self.formatResponse(r)
 
     def getBusinessDataModelVersion(self):
