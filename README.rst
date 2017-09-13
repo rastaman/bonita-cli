@@ -28,9 +28,10 @@ All commands::
     $ bonita upload <type> <filename>
     $ bonita process [deploy <filename_on_server>|get <process_id>|enable <process_id>|disable <process_id>]
     $ bonita portal [page [deploy <filename_on_server>|get <page_id>|update <page_id> <filename_on_server>]]
-    $ bonita application [get [<application_id>]]
+    $ bonita application [get [<application_id>]|create <filename>|update <application_id> <filename>|delete <application_id>]
     $ bonita organization [import <filename>|export|delete]
-    $ bonita bdm [install <filename>|uninstall|cleanAndUninstall|get [version|clientZip]]
+    $ bonita bdm [install <filename>|uninstall|cleanAndUninstall|get [version|clientZip <filename>]]
+    $ bonita profile [import <filename>|search [<criteria>]]
     $ bonita -h | --help
     $ bonita --version
 

@@ -4,16 +4,16 @@ import os
 import javaobj
 import base64
 
-import logging
-import time
-
-try:
-    import http.client as http_client
-except ImportError:
-    import httplib as http_client
-http_client.HTTPConnection.debuglevel = 1
-logging.basicConfig(level=logging.DEBUG)
-logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
+# import logging
+# import time
+# 
+# try:
+#     import http.client as http_client
+# except ImportError:
+#     import httplib as http_client
+# http_client.HTTPConnection.debuglevel = 1
+# logging.basicConfig(level=logging.DEBUG)
+# logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
 
 
 class BonitaClient:
@@ -55,6 +55,12 @@ class BonitaClient:
   </list>
 </object-stream>"""
 
+    CLASSNAME_SEARCHOPTIONS_PARAMETER = """<object-stream>
+  <list>
+    <string>org.bonitasoft.engine.search.SearchOptions</string>
+  </list>
+</object-stream>"""
+
     VALUE_STRING_PARAMETER = """<object-stream>
   <object-array>
     <string>{}</string>
@@ -83,6 +89,18 @@ class BonitaClient:
   </object-array>
 </object-stream>"""
 
+    VALUE_SEARCHOPTIONS_PARAMETER = """<object-stream>
+  <object-array>
+    <org.bonitasoft.engine.search.impl.SearchOptionsImpl>
+      <filters/>
+      <searchTerm>{}</searchTerm>
+      <startIndex>0</startIndex>
+      <numberOfResults>-1</numberOfResults>
+      <sorts/>
+    </org.bonitasoft.engine.search.impl.SearchOptionsImpl>
+  </object-array>
+</object-stream>"""
+
     XML_SESSION_TEMPLATE = """<object-stream>
   <map>
     <entry>
@@ -104,6 +122,7 @@ class BonitaClient:
     API_IDENTITY = "org.bonitasoft.engine.api.IdentityAPI"
     API_BDM = "org.bonitasoft.engine.api.TenantAdministrationAPI"
     API_COMMAND = "org.bonitasoft.engine.api.CommandAPI"
+    API_PROFILE = "org.bonitasoft.engine.api.ProfileAPI"
 
     def __init__(self, configuration):
         self.configuration = configuration
@@ -461,7 +480,7 @@ class BonitaClient:
 
     # Profile API
 
-    def importProfile(self, profileFilename):
+    def importProfiles(self, profileFilename):
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
@@ -469,11 +488,6 @@ class BonitaClient:
         headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
         with open(profileFilename, 'rb') as profileFile:
             data = profileFile.read()
-            #javaarray = javaobj.JavaByteArray(data, classdesc=javaobj.ByteArrayDesc())
-            #binaryData = javaobj.dumps(javaarray)
-            #with open('/tmp/datas.ser', 'wb') as writefile:
-            #    writefile.write(binaryData)
-            #    writefile.close()
             payload = {
                 "options": xmlSession,
                 "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
@@ -484,15 +498,17 @@ class BonitaClient:
             return self.formatResponse(r)
         return 'KO'
 
-    def exportProfile(self):
+    def searchProfiles(self, criteria):
+        if criteria is None:
+            criteria = ""
         rc, raw_session = self.getSession()
         xmlSession = self.xmlSessionFromSession(json.loads(raw_session))
         payload = {
             "options": xmlSession,
-            "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
-            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+            "classNameParameters": BonitaClient.CLASSNAME_SEARCHOPTIONS_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_SEARCHOPTIONS_PARAMETER.format(criteria)
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_COMMAND + "/" + "exportProfile"
+        url  = self.url + "/serverAPI/" + BonitaClient.API_PROFILE + "/" + "searchProfiles"
         headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
