@@ -7,3 +7,4 @@ from .portal import *
 from .organization import *
 from .application import *
 from .bdm import *
+from .profile import *

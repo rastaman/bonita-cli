@@ -11,6 +11,7 @@ Usage:
   bonita application [get [<application_id>]|create <filename>|update <application_id> <filename>|delete <application_id>]
   bonita organization [import <filename>|export|delete]
   bonita bdm [install <filename>|uninstall|cleanAndUninstall|get [version|clientZip <filename>]]
+  bonita profile [import <filename>|export]
   bonita -h | --help
   bonita --version
 

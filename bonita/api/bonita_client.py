@@ -2,16 +2,18 @@ import requests
 import json
 import os
 import javaobj
+import base64
 
-#try:
-#import logging
-#import time
-#    import http.client as http_client
-#except ImportError:
-#    import httplib as http_client
-#http_client.HTTPConnection.debuglevel = 1
-#logging.basicConfig(level=logging.DEBUG)
-#logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
+import logging
+import time
+
+try:
+    import http.client as http_client
+except ImportError:
+    import httplib as http_client
+http_client.HTTPConnection.debuglevel = 1
+logging.basicConfig(level=logging.DEBUG)
+logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
 
 
 class BonitaClient:
@@ -46,6 +48,13 @@ class BonitaClient:
   </list>
 </object-stream>"""
 
+    CLASSNAME_COMMAND_PARAMETER = """<object-stream>
+  <list>
+    <string>java.lang.String</string>
+    <string>java.util.Map</string>
+  </list>
+</object-stream>"""
+
     VALUE_STRING_PARAMETER = """<object-stream>
   <object-array>
     <string>{}</string>
@@ -59,6 +68,18 @@ class BonitaClient:
     VALUE_BINARY_PARAMETER = """<object-stream>
   <object-array>
     <string>==ByteArray==</string>
+  </object-array>
+</object-stream>"""
+
+    VALUE_COMMAND_PARAMETER = """<object-stream>
+  <object-array>
+    <string>{}</string>
+    <map>
+      <entry>
+        <string>xmlContent</string>
+        <byte-array>{}</byte-array>
+      </entry>
+    </map>
   </object-array>
 </object-stream>"""
 
@@ -82,6 +103,7 @@ class BonitaClient:
 
     API_IDENTITY = "org.bonitasoft.engine.api.IdentityAPI"
     API_BDM = "org.bonitasoft.engine.api.TenantAdministrationAPI"
+    API_COMMAND = "org.bonitasoft.engine.api.CommandAPI"
 
     def __init__(self, configuration):
         self.configuration = configuration
@@ -433,6 +455,44 @@ class BonitaClient:
             "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
         }
         url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "getBusinessDataModelVersion"
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        r = self.getInternalSession().post(url, data=payload, headers=headers)
+        return self.formatResponse(r)
+
+    # Profile API
+
+    def importProfile(self, profileFilename):
+        rc, raw_session = self.getSession()
+        session = json.loads(raw_session)
+        xmlSession = self.xmlSessionFromSession(session)
+        url  = self.url + "/serverAPI/" + BonitaClient.API_COMMAND + "/" + "execute"
+        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        with open(profileFilename, 'rb') as profileFile:
+            data = profileFile.read()
+            #javaarray = javaobj.JavaByteArray(data, classdesc=javaobj.ByteArrayDesc())
+            #binaryData = javaobj.dumps(javaarray)
+            #with open('/tmp/datas.ser', 'wb') as writefile:
+            #    writefile.write(binaryData)
+            #    writefile.close()
+            payload = {
+                "options": xmlSession,
+                "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
+                "parametersValues": BonitaClient.VALUE_COMMAND_PARAMETER.format( "importProfilesCommand",
+                                                                                 base64.b64encode(data))
+            }
+            r = self.getInternalSession().post(url, data=payload, headers=headers)
+            return self.formatResponse(r)
+        return 'KO'
+
+    def exportProfile(self):
+        rc, raw_session = self.getSession()
+        xmlSession = self.xmlSessionFromSession(json.loads(raw_session))
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
+        url  = self.url + "/serverAPI/" + BonitaClient.API_COMMAND + "/" + "exportProfile"
         headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
