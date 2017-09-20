@@ -4,16 +4,16 @@ import os
 import javaobj
 import base64
 
-# import logging
-# import time
+#import logging
+#import time
 # 
-# try:
+#try:
 #     import http.client as http_client
-# except ImportError:
+#except ImportError:
 #     import httplib as http_client
-# http_client.HTTPConnection.debuglevel = 1
-# logging.basicConfig(level=logging.DEBUG)
-# logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
+#http_client.HTTPConnection.debuglevel = 1
+#logging.basicConfig(level=logging.DEBUG)
+#logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
 
 
 class BonitaClient:
@@ -347,6 +347,14 @@ class BonitaClient:
 
     def deleteApplication(self, application_id):
         r = self.getInternalSession().delete( self.url + '/API/living/application/' + application_id)
+        return self.formatResponse(r)
+
+    def importApplication(self, server_filename):
+        params = {
+            'applicationsDataUpload': server_filename,
+            'importPolicy': 'FAIL_ON_DUPLICATES'
+        }
+        r = self.getInternalSession().get( self.url + '/services/application/import', params=params)
         return self.formatResponse(r)
 
     # Organization API

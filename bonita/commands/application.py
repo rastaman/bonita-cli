@@ -22,6 +22,8 @@ class Application(Base):
             self.update()
         elif self.hasOption('delete'):
             self.delete()
+        elif self.hasOption('import'):
+            self.importApplication()
         else:
             print('Nothing to do.')
 
@@ -48,4 +50,9 @@ class Application(Base):
     def delete(self):
         application_id = self.options['<application_id>']
         rc, datas = self.bonita_client.deleteApplication(application_id)
+        self.processResults(rc, datas)
+
+    def importApplication(self):
+        server_filename = self.options['<server_filename>']
+        rc, datas = self.bonita_client.importApplication(server_filename)
         self.processResults(rc, datas)
