@@ -3,6 +3,7 @@ import json
 import os
 import javaobj
 import base64
+import glob
 
 #import logging
 #import time
@@ -539,7 +540,7 @@ class BonitaClient:
             }
             r = self.getInternalSession().post(url, data=payload, headers=headers)
             return self.formatResponse(r)
-        return 'KO'
+        return [-1, 'KO']
 
     def searchProfiles(self, criteria):
         if criteria is None:
@@ -559,6 +560,40 @@ class BonitaClient:
 
     # (Custom) Packaging API
 
-    def generateDescriptor(self, dist_folder, descriptor_file):
+    def getGlobAsList(self, folder, glob_expression):
+        if not folder.endswith('/'):
+            folder = '%s/' % folder
+        return [f.replace(folder, '') for f in glob.iglob(glob_expression % folder)]
 
-        return 'OK'
+    def generateDescriptor(self, dist_folder, descriptor_filename):
+        descriptor = dict()
+        descriptor['bdms'] = self.getGlobAsList(dist_folder, '%s/bdm*.zip')
+        descriptor['layouts'] = self.getGlobAsList(
+            dist_folder, '%s/layout_*.zip')
+        descriptor['pages'] = self.getGlobAsList(dist_folder, '%s/page_*.zip')
+        descriptor['rest_extensions'] = self.getGlobAsList(
+            dist_folder, '%s/get*.zip')
+        descriptor['profiles'] = self.getGlobAsList(
+            dist_folder, '%s/Profile*.xml')[0]
+        descriptor['processes'] = self.getGlobAsList(dist_folder, '%s/*.bar')
+        descriptor['application'] = self.getGlobAsList(
+            dist_folder, '%s/*Application.xml')[0]
+        with open(descriptor_filename, 'w') as descriptor_file:
+            descriptor_file.write(json.dumps(descriptor, indent=True))
+            descriptor_file.close()
+            return 200
+        return -1
+
+    def installDescriptor(self, dist_folder, descriptor_filename):
+        with open(descriptor_filename, 'r') as descriptor_file:
+            datas = descriptor_file.read()
+            descriptor = json.loads(datas)
+            # Load BDM
+            # Load pages
+            # Load layouts
+            # Load rest extensions
+            # Load profiles
+            # Load process
+            # Activate processes
+            # Load application
+        return 200

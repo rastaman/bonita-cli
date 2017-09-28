@@ -14,12 +14,21 @@ class Packaging(Base):
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('generate'):
             self.generateDescriptor()
+        if self.hasOption('install'):
+            self.installDescriptor()
         else:
             print('Nothing to do.')
 
     def generateDescriptor(self):
         dist_folder = self.options['<dist_folder>']
         descriptor_file = self.options['<descriptor_file>']
-        rc, datas = self.bonita_client.generateDescriptor(
+        rc = self.bonita_client.generateDescriptor(
             dist_folder, descriptor_file)
-        self.processResults(rc, datas)
+        self.processResultCode(rc)
+
+    def installDescriptor(self):
+        dist_folder = self.options['<dist_folder>']
+        descriptor_file = self.options['<descriptor_file>']
+        rc = self.bonita_client.installDescriptor(
+            dist_folder, descriptor_file)
+        self.processResultCode(rc)
