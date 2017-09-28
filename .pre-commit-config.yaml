@@ -1,0 +1,10 @@
+repos:
+- repo: git://github.com/pre-commit/pre-commit-hooks
+  sha: v0.9.4  # Use the ref you want to point at
+  hooks:
+  - id: trailing-whitespace
+  - id: autopep8-wrapper
+  - id: check-xml
+  - id: check-yaml
+  - id: end-of-file-fixer
+  - id: requirements-txt-fixer

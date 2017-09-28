@@ -6,11 +6,11 @@ from bonita.api.bonita_client import BonitaClient
 
 
 class Process(Base):
-    
+
     """Manage process"""
 
     def run(self):
-        #bonita process [deploy <filename_on_server>|get <process_id>|enable <process_id>|disable <process_id>]
+        # bonita process [deploy <filename_on_server>|get <process_id>|enable <process_id>|disable <process_id>]
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('deploy'):

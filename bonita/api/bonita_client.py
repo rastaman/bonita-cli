@@ -6,13 +6,13 @@ import base64
 
 #import logging
 #import time
-# 
-#try:
+#
+# try:
 #     import http.client as http_client
-#except ImportError:
+# except ImportError:
 #     import httplib as http_client
 #http_client.HTTPConnection.debuglevel = 1
-#logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 #logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
 
 
@@ -23,10 +23,10 @@ class BonitaClient:
         'process': ['.bar'],
         'organization': ['.xml'],
         'actors': ['.xml'],
-        'image': [ '.png', '.jpg', '.gif', '.jpeg', '.bmp', '.wbmp', '.tga'],
+        'image': ['.png', '.jpg', '.gif', '.jpeg', '.bmp', '.wbmp', '.tga'],
         'page': ['.zip'],
         'applications': ['.xml'],
-        'connector' : ['.zip'],
+        'connector': ['.zip'],
         'report': [],
         'resource': ['.jar'],
         'profiles': ['.xml']
@@ -138,7 +138,7 @@ class BonitaClient:
     def getInternalSession(self):
         if self.session is None:
             cookies = self.configuration['cookies']
-            headers = { 
+            headers = {
                 'X-Bonita-API-Token': self.configuration['token']
             }
             self.session = requests.Session()
@@ -149,11 +149,12 @@ class BonitaClient:
     def getInternalPlatformSession(self):
         if self.platform_session is None:
             cookies = self.configuration['platform_cookies']
-            headers = { 
+            headers = {
                 'X-Bonita-API-Token': self.configuration['platform_token']
             }
             self.platform_session = requests.Session()
-            self.platform_session.cookies = requests.utils.cookiejar_from_dict(cookies)
+            self.platform_session.cookies = requests.utils.cookiejar_from_dict(
+                cookies)
             self.platform_session.headers = headers
         return self.platform_session
 
@@ -168,7 +169,7 @@ class BonitaClient:
     # Utils for server API
 
     def escapeXml(self, xml):
-        return xml.replace('<','&lt;').replace('>','&gt;').replace('"','&quot;').replace('\'','&apos;')
+        return xml.replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace('\'', '&apos;')
 
     def xmlSessionFromSession(self, session):
         xmlSession = BonitaClient.XML_SESSION_TEMPLATE.format(
@@ -188,9 +189,9 @@ class BonitaClient:
             'redirectURL': ''
         }
 
-        r = requests.post( url + '/loginservice', data=payload, headers= {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'charset': 'utf-8'
+        r = requests.post(url + '/loginservice', data=payload, headers={
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'charset': 'utf-8'
         })
 
         if r.status_code == 200:
@@ -200,19 +201,19 @@ class BonitaClient:
             self.configuration['token'] = cookies['X-Bonita-API-Token']
 
         return r.status_code
-    
+
     def logout(self):
-        r = self.getInternalSession().get( self.url + '/logoutservice')
+        r = self.getInternalSession().get(self.url + '/logoutservice')
         return r.status_code
 
     def getSession(self):
-        r = self.getInternalSession().get( self.url + '/API/system/session/unusedid')
+        r = self.getInternalSession().get(self.url + '/API/system/session/unusedid')
         return self.formatResponse(r)
 
     # System tenant API
 
     def getCurrentTenant(self):
-        r = self.getInternalSession().get( self.url + '/API/system/tenant/unusedid')
+        r = self.getInternalSession().get(self.url + '/API/system/tenant/unusedid')
         return self.formatResponse(r)
 
     def toggleTenantState(self, state):
@@ -220,7 +221,8 @@ class BonitaClient:
             'Content-Type': 'application/json'
         }
         payload = json.dumps({'paused': state})
-        r = self.getInternalSession().put( self.url + '/API/system/tenant/unusedid', headers=headers, data=payload)
+        r = self.getInternalSession().put(self.url + '/API/system/tenant/unusedid',
+                                          headers=headers, data=payload)
         return r.status_code
 
     # Upload API
@@ -231,10 +233,12 @@ class BonitaClient:
         filename, extension = os.path.splitext(uploadFilename)
         exts = BonitaClient.UPLOAD_TYPES.get(uploadType)
         if len(exts) != 0 and not extension in exts:
-            msg = 'Unsupported extension %s for upload type %s (supported: %s)' % (extension, uploadType, exts)
-            return [ -2, msg]
+            msg = 'Unsupported extension %s for upload type %s (supported: %s)' % (
+                extension, uploadType, exts)
+            return [-2, msg]
         files = {'file': open(filename + extension, 'rb')}
-        r = self.getInternalSession().post(self.url + '/portal/' + uploadType + 'Upload', files=files)
+        r = self.getInternalSession().post(self.url + '/portal/' +
+                                           uploadType + 'Upload', files=files)
         return self.formatResponse(r)
 
     # Platform api
@@ -246,9 +250,9 @@ class BonitaClient:
             'redirect': 'false'
         }
 
-        r = requests.post( url + '/platformloginservice', data=payload, headers= {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'charset': 'utf-8'
+        r = requests.post(url + '/platformloginservice', data=payload, headers={
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'charset': 'utf-8'
         })
 
         if r.status_code == 200:
@@ -260,34 +264,39 @@ class BonitaClient:
         return r.status_code
 
     def platformLogout(self):
-        r = self.getInternalPlatformSession().get( self.url + '/platformlogoutservice?redirect=false')
+        r = self.getInternalPlatformSession().get(
+            self.url + '/platformlogoutservice?redirect=false')
         return r.status_code
 
     def getPlatform(self):
-        r = self.getInternalPlatformSession().get( self.url + '/API/platform/platform/unusedid')
+        r = self.getInternalPlatformSession().get(
+            self.url + '/API/platform/platform/unusedid')
         return self.formatResponse(r)
 
     def togglePlatformState(self, state):
         payload = json.dumps({'state': state})
-        headers = { 'Content-Type': 'application/json' }
-        r = self.getInternalPlatformSession().put( self.url + '/API/platform/platform/unusedid', data=payload, headers=headers)
+        headers = {'Content-Type': 'application/json'}
+        r = self.getInternalPlatformSession().put(
+            self.url + '/API/platform/platform/unusedid', data=payload, headers=headers)
         return r.status_code
 
     # Process API
 
     def deployProcess(self, server_filename):
         payload = json.dumps({'fileupload': server_filename})
-        headers = { 'Content-Type': 'application/json' }
-        r = self.getInternalSession().post( self.url + '/API/bpm/process', data=payload, headers=headers)
+        headers = {'Content-Type': 'application/json'}
+        r = self.getInternalSession().post(self.url + '/API/bpm/process',
+                                           data=payload, headers=headers)
         return self.formatResponse(r)
-    
+
     def getProcess(self, process_id):
-        r = self.getInternalSession().get( self.url + '/API/bpm/process/' + process_id)
+        r = self.getInternalSession().get(self.url + '/API/bpm/process/' + process_id)
         return self.formatResponse(r)
 
     def updateProcess(self, process_id, payload):
-        headers = { 'Content-Type': 'application/json' }
-        r = self.getInternalSession().put( self.url + '/API/bpm/process/' + process_id, data=payload, headers=headers)
+        headers = {'Content-Type': 'application/json'}
+        r = self.getInternalSession().put(self.url + '/API/bpm/process/' +
+                                          process_id, data=payload, headers=headers)
         return self.formatResponse(r)
 
     def enableProcess(self, process_id):
@@ -300,18 +309,20 @@ class BonitaClient:
 
     def deployPage(self, server_filename):
         payload = json.dumps({'pageZip': server_filename})
-        headers = { 'Content-Type': 'application/json' }
-        r = self.getInternalSession().post( self.url + '/API/portal/page', data=payload, headers=headers)
+        headers = {'Content-Type': 'application/json'}
+        r = self.getInternalSession().post(self.url + '/API/portal/page',
+                                           data=payload, headers=headers)
         return self.formatResponse(r)
 
     def getPage(self, page_id):
-        r = self.getInternalSession().get( self.url + '/API/portal/page/' + page_id)
+        r = self.getInternalSession().get(self.url + '/API/portal/page/' + page_id)
         return self.formatResponse(r)
 
     def updatePage(self, page_id, server_filename):
         payload = json.dumps({'pageZip': server_filename})
-        headers = { 'Content-Type': 'application/json' }
-        r = self.getInternalSession().put( self.url + '/API/portal/page/' + page_id, data=payload, headers=headers)
+        headers = {'Content-Type': 'application/json'}
+        r = self.getInternalSession().put(self.url + '/API/portal/page/' +
+                                          page_id, data=payload, headers=headers)
         return self.formatResponse(r)
 
     # Application API
@@ -321,18 +332,21 @@ class BonitaClient:
             'o': 'id',
             'd': 'applicationId,pageId'
         }
-        r = self.getInternalSession().get( self.url + '/API/living/application', params=params)
+        r = self.getInternalSession().get(
+            self.url + '/API/living/application', params=params)
         return self.formatResponse(r)
 
     def getApplication(self, application_id):
-        r = self.getInternalSession().get( self.url + '/API/living/application/' + application_id)
+        r = self.getInternalSession().get(
+            self.url + '/API/living/application/' + application_id)
         return self.formatResponse(r)
 
     def createApplication(self, filename):
         with open(filename, 'r') as application_file:
             datas = application_file.read()
             application_file.close()
-            r = self.getInternalSession().post( self.url + '/API/living/application', data=datas)
+            r = self.getInternalSession().post(
+                self.url + '/API/living/application', data=datas)
             print r.content
             return self.formatResponse(r)
         pass
@@ -341,12 +355,14 @@ class BonitaClient:
         with open(filename, 'r') as application_file:
             datas = application_file.read()
             application_file.close()
-            r = self.getInternalSession().put( self.url + '/API/living/application/' + application_id, data=datas)
+            r = self.getInternalSession().put(
+                self.url + '/API/living/application/' + application_id, data=datas)
             return self.formatResponse(r)
         pass
 
     def deleteApplication(self, application_id):
-        r = self.getInternalSession().delete( self.url + '/API/living/application/' + application_id)
+        r = self.getInternalSession().delete(
+            self.url + '/API/living/application/' + application_id)
         return self.formatResponse(r)
 
     def importApplication(self, server_filename):
@@ -354,7 +370,8 @@ class BonitaClient:
             'applicationsDataUpload': server_filename,
             'importPolicy': 'FAIL_ON_DUPLICATES'
         }
-        r = self.getInternalSession().get( self.url + '/services/application/import', params=params)
+        r = self.getInternalSession().get(
+            self.url + '/services/application/import', params=params)
         return self.formatResponse(r)
 
     # Organization API
@@ -363,15 +380,17 @@ class BonitaClient:
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
-        url  = self.url + "/serverAPI/" + BonitaClient.API_IDENTITY + "/" + "importOrganization"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + \
+            BonitaClient.API_IDENTITY + "/" + "importOrganization"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         with open(organizationFilename, 'r') as organizationFile:
             data = organizationFile.read()
             escapedData = self.escapeXml(data)
             payload = {
                 "options": xmlSession,
-                "classNameParameters": BonitaClient.CLASSNAME_STRING_PARAMETER, 
-                "parametersValues": BonitaClient.VALUE_STRING_PARAMETER.format( escapedData )
+                "classNameParameters": BonitaClient.CLASSNAME_STRING_PARAMETER,
+                "parametersValues": BonitaClient.VALUE_STRING_PARAMETER.format(escapedData)
             }
             r = self.getInternalSession().post(url, data=payload, headers=headers)
             return self.formatResponse(r)
@@ -386,8 +405,10 @@ class BonitaClient:
             "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
             "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_IDENTITY + "/" + "deleteOrganization"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + \
+            BonitaClient.API_IDENTITY + "/" + "deleteOrganization"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
 
@@ -399,28 +420,33 @@ class BonitaClient:
             "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
             "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_IDENTITY + "/" + "exportOrganization"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + \
+            BonitaClient.API_IDENTITY + "/" + "exportOrganization"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
 
-    # BDM API - Tenant Administration API  
+    # BDM API - Tenant Administration API
     # Pause the tenant and restart it before use
 
     def installBusinessDataModel(self, zipFilename):
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
-        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "installBusinessDataModel"
+        url = self.url + "/serverAPI/" + BonitaClient.API_BDM + \
+            "/" + "installBusinessDataModel"
         headers = {}
         with open(zipFilename, 'rb') as zippedFile:
             zipDatas = zippedFile.read()
-            javaarray = javaobj.JavaByteArray(zipDatas, classdesc=javaobj.ByteArrayDesc())
+            javaarray = javaobj.JavaByteArray(
+                zipDatas, classdesc=javaobj.ByteArrayDesc())
             datas = javaobj.dumps(javaarray)
             with open('/tmp/datas.ser', 'wb') as writefile:
                 writefile.write(datas)
                 writefile.close()
-        files = {'binaryParameter0': ('binaryParameter0', open('/tmp/datas.ser','rb'), 'application/octet-stream', {'Content-Transfer-Encoding': 'binary'})}
+        files = {'binaryParameter0': ('binaryParameter0', open(
+            '/tmp/datas.ser', 'rb'), 'application/octet-stream', {'Content-Transfer-Encoding': 'binary'})}
         payload = {
             "options": xmlSession,
             "classNameParameters": BonitaClient.CLASSNAME_BINARY_PARAMETER,
@@ -437,8 +463,10 @@ class BonitaClient:
             "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
             "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "uninstallBusinessDataModel"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + BonitaClient.API_BDM + \
+            "/" + "uninstallBusinessDataModel"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
 
@@ -450,8 +478,10 @@ class BonitaClient:
             "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
             "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "cleanAndUninstallBusinessDataModel"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + BonitaClient.API_BDM + \
+            "/" + "cleanAndUninstallBusinessDataModel"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
 
@@ -463,11 +493,13 @@ class BonitaClient:
             "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
             "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "cleanAndUninstallBusinessDataModel"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + BonitaClient.API_BDM + \
+            "/" + "cleanAndUninstallBusinessDataModel"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         r = self.getInternalSession().post(url, data=payload, headers=headers, stream=True)
         content = r.content
-        #Oups, it's not the zip file
+        # Oups, it's not the zip file
         with open(filename, 'wb') as clientZipFile:
             clientZipFile.write(content)
             clientZipFile.close()
@@ -481,8 +513,10 @@ class BonitaClient:
             "classNameParameters": BonitaClient.CLASSNAME_VOID_PARAMETER,
             "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_BDM + "/" + "getBusinessDataModelVersion"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + BonitaClient.API_BDM + \
+            "/" + "getBusinessDataModelVersion"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
 
@@ -492,15 +526,16 @@ class BonitaClient:
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
-        url  = self.url + "/serverAPI/" + BonitaClient.API_COMMAND + "/" + "execute"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + BonitaClient.API_COMMAND + "/" + "execute"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         with open(profileFilename, 'rb') as profileFile:
             data = profileFile.read()
             payload = {
                 "options": xmlSession,
                 "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
-                "parametersValues": BonitaClient.VALUE_COMMAND_PARAMETER.format( "importProfilesCommand",
-                                                                                 base64.b64encode(data))
+                "parametersValues": BonitaClient.VALUE_COMMAND_PARAMETER.format("importProfilesCommand",
+                                                                                base64.b64encode(data))
             }
             r = self.getInternalSession().post(url, data=payload, headers=headers)
             return self.formatResponse(r)
@@ -516,7 +551,14 @@ class BonitaClient:
             "classNameParameters": BonitaClient.CLASSNAME_SEARCHOPTIONS_PARAMETER,
             "parametersValues": BonitaClient.VALUE_SEARCHOPTIONS_PARAMETER.format(criteria)
         }
-        url  = self.url + "/serverAPI/" + BonitaClient.API_PROFILE + "/" + "searchProfiles"
-        headers = { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+        url = self.url + "/serverAPI/" + BonitaClient.API_PROFILE + "/" + "searchProfiles"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
         r = self.getInternalSession().post(url, data=payload, headers=headers)
         return self.formatResponse(r)
+
+    # (Custom) Packaging API
+
+    def generateDescriptor(self, dist_folder, descriptor_file):
+
+        return 'OK'

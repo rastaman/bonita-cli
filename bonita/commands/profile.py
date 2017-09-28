@@ -5,7 +5,7 @@ from bonita.api.bonita_client import BonitaClient
 
 
 class Profile(Base):
-    
+
     """Manage Profile"""
 
     def run(self):
@@ -28,4 +28,3 @@ class Profile(Base):
         criteria = self.options['<criteria>']
         rc, datas = self.bonita_client.searchProfiles(criteria)
         self.processResults(rc, datas)
-

@@ -8,3 +8,4 @@ from .organization import *
 from .application import *
 from .bdm import *
 from .profile import *
+from .packaging import *

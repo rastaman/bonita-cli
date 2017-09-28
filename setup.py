@@ -34,15 +34,15 @@ class RunTests(Command):
 
 
 setup(
-    name = 'bonita',
-    version = __version__,
-    description = 'A command line client for Bonita.',
-    long_description = long_description,
-    url = 'https://github.com/rastaman/bonita-cli',
-    author = 'Ludovic Maître',
-    author_email = 'rastaman@github.com',
-    license = 'WTFPL',
-    classifiers = [
+    name='bonita',
+    version=__version__,
+    description='A command line client for Bonita.',
+    long_description=long_description,
+    url='https://github.com/rastaman/bonita-cli',
+    author='Ludovic Maître',
+    author_email='rastaman@github.com',
+    license='WTFPL',
+    classifiers=[
         'Intended Audience :: Developers',
         'Topic :: Utilities',
         'License :: Public Domain',
@@ -56,16 +56,16 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    keywords = 'cli',
-    packages = find_packages(exclude=['docs', 'tests*']),
-    install_requires = ['docopt'],
-    extras_require = {
+    keywords='cli',
+    packages=find_packages(exclude=['docs', 'tests*']),
+    install_requires=['docopt'],
+    extras_require={
         'test': ['coverage', 'pytest', 'pytest-cov'],
     },
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'bonita=bonita.cli:main',
         ],
     },
-    cmdclass = {'test': RunTests},
+    cmdclass={'test': RunTests},
 )

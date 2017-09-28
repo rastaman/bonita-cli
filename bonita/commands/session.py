@@ -32,10 +32,10 @@ class Session(Base):
             self.saveConfiguration(self.bonita_client.getConfiguration())
         self.processResultCode(rc)
 
-    def logout(self):        
+    def logout(self):
         rc = self.bonita_client.logout()
         self.processResultCode(rc)
 
     def get(self):
-        rc , datas = self.bonita_client.getSession()
+        rc, datas = self.bonita_client.getSession()
         self.processResults(rc, datas)

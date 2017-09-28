@@ -6,12 +6,12 @@ from bonita.api.bonita_client import BonitaClient
 
 
 class BDM(Base):
-    
+
     """Manage Business Data Model"""
 
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
-        #bonita organization [import <filename>|export|delete]
+        # bonita organization [import <filename>|export|delete]
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('install'):
             self.install()
@@ -45,4 +45,3 @@ class BDM(Base):
             filename = self.options['filename']
             rc, datas = self.bonita_client.getClientBDMZip(filename)
             self.processResults(rc, datas)
-

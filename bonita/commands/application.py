@@ -7,11 +7,11 @@ from wsgiref.util import application_uri
 
 
 class Application(Base):
-    
+
     """Manage application"""
 
     def run(self):
-        #bonita application [get <application_id>]
+        # bonita application [get <application_id>]
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('get'):
@@ -38,13 +38,14 @@ class Application(Base):
 
     def create(self):
         filename = self.options['<filename>']
-        rc, datas = self.bonita_client.createApplication( filename )
+        rc, datas = self.bonita_client.createApplication(filename)
         self.processResults(rc, datas)
 
     def update(self):
         application_id = self.options['<application_id>']
         filename = self.options['<filename>']
-        rc, datas = self.bonita_client.updateApplication( application_id, filename)
+        rc, datas = self.bonita_client.updateApplication(
+            application_id, filename)
         self.processResults(rc, datas)
 
     def delete(self):

@@ -29,7 +29,7 @@ class Platform(Base):
         password = self.options['<password>']
 
         rc = self.bonita_client.platformLogin(url, username, password)
-        
+
         if rc == 200:
             self.saveConfiguration(self.bonita_client.getConfiguration())
         self.processResultCode(rc)

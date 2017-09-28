@@ -6,12 +6,12 @@ from bonita.api.bonita_client import BonitaClient
 
 
 class Organization(Base):
-    
+
     """Manage organization"""
 
     def run(self):
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
-        #bonita organization [import <filename>|export|delete]
+        # bonita organization [import <filename>|export|delete]
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('import'):
             self.importOrganization()

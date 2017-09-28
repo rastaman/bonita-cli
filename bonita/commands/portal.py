@@ -6,11 +6,11 @@ from bonita.api.bonita_client import BonitaClient
 
 
 class Portal(Base):
-    
+
     """Manage portal"""
 
     def run(self):
-        #bonita portal [page [deploy <filename_on_server>|get <page_id>|update <page_id> <filename_on_server>]]
+        # bonita portal [page [deploy <filename_on_server>|get <page_id>|update <page_id> <filename_on_server>]]
         #print('You supplied the following options:', dumps(self.options, indent=2, sort_keys=True))
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('deploy'):
