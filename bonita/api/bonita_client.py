@@ -90,6 +90,22 @@ class BonitaClient:
   </object-array>
 </object-stream>"""
 
+    VALUE_COMMAND_PROFILE_PARAMETER = """<object-stream>
+  <object-array>
+    <string>{}</string>
+    <map>
+      <entry>
+        <string>xmlContent</string>
+        <byte-array>{}</byte-array>
+      </entry>
+      <entry>
+        <string>policy</string>
+        <org.bonitasoft.engine.profile.ImportPolicy>REPLACE_DUPLICATES</org.bonitasoft.engine.profile.ImportPolicy>
+      </entry>
+    </map>
+  </object-array>
+</object-stream>"""
+
     VALUE_SEARCHOPTIONS_PARAMETER = """<object-stream>
   <object-array>
     <org.bonitasoft.engine.search.impl.SearchOptionsImpl>
@@ -543,8 +559,8 @@ class BonitaClient:
             payload = {
                 "options": xmlSession,
                 "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
-                "parametersValues": BonitaClient.VALUE_COMMAND_PARAMETER.format("importProfilesCommand",
-                                                                                base64.b64encode(data))
+                "parametersValues": BonitaClient.VALUE_COMMAND_PROFILE_PARAMETER.format("importProfilesCommand",
+                                                                                        base64.b64encode(data))
             }
             r = self.getInternalSession().post(url, data=payload, headers=headers)
             return self.formatResponse(r)
