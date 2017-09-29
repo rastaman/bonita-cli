@@ -306,6 +306,14 @@ class BonitaClient:
     def disableProcess(self, process_id):
         return self.updateProcess(process_id, json.dumps({'activationState': 'DISABLED'}))
 
+    def getProcesses(self):
+        params = {
+            'c': 200,
+            's': ''
+        }
+        r = self.getInternalSession().get(self.url + '/API/bpm/process?', params=params)
+        return self.formatResponse(r)
+
     # Portal API
 
     def deployPage(self, server_filename):
@@ -573,6 +581,8 @@ class BonitaClient:
         descriptor['pages'] = self.getGlobAsList(dist_folder, '%s/page_*.zip')
         descriptor['rest_extensions'] = self.getGlobAsList(
             dist_folder, '%s/get*.zip')
+        descriptor['organization'] = self.getGlobAsList(
+            dist_folder, '%s/Organization*.xml')[0]
         descriptor['profiles'] = self.getGlobAsList(
             dist_folder, '%s/Profile*.xml')[0]
         descriptor['processes'] = self.getGlobAsList(dist_folder, '%s/*.bar')
@@ -585,15 +595,50 @@ class BonitaClient:
         return -1
 
     def installDescriptor(self, dist_folder, descriptor_filename):
+        results = dict()
         with open(descriptor_filename, 'r') as descriptor_file:
             datas = descriptor_file.read()
             descriptor = json.loads(datas)
             # Load BDM
+            self.toggleTenantState('true')
+            for b in descriptor['bdms']:
+                self.installBusinessDataModel('%s/%s' % (dist_folder, b))
+            self.toggleTenantState('false')
             # Load pages
+            for p in descriptor['pages']:
+                rc, serverfile = self.upload(
+                    'page', '%s/%s' % (dist_folder, p))
+                self.deployPage(serverfile)
             # Load layouts
+            for l in descriptor['layouts']:
+                rc, serverfile = self.upload(
+                    'page', '%s/%s' % (dist_folder, l))
+                self.deployPage(serverfile)
             # Load rest extensions
+            for r in descriptor['rest_extensions']:
+                rc, serverfile = self.upload(
+                    'page', '%s/%s' % (dist_folder, r))
+                self.deployPage(serverfile)
+            # Load organization
+            rc, organizationPayload = self.importOrganization(
+                '%s/%s' % (dist_folder, descriptor['organization']))
             # Load profiles
+            rc, profilesPayload = self.importProfiles(
+                '%s/%s' % (dist_folder, descriptor['profiles']))
             # Load process
+            for p in descriptor['processes']:
+                rc, serverfile = self.upload(
+                    'process', '%s/%s' % (dist_folder, p))
+                rc, payload = self.deployProcess(serverfile)
+                processDescriptor = json.loads(payload)
             # Activate processes
+            processesDescriptor = json.loads(self.getProcesses()[1])
+            for p in processesDescriptor:
+                id = p['id']
+                self.enableProcess(id)
             # Load application
+            rc, serverfile = self.upload(
+                'applications', '%s/%s' % (dist_folder, descriptor['application']))
+            rc, result = self.importApplication(serverfile)
+            print result
         return 200

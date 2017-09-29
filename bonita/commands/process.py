@@ -30,9 +30,13 @@ class Process(Base):
         self.processResults(rc, datas)
 
     def get(self):
-        process_id = self.options['<process_id>']
-        rc, datas = self.bonita_client.getProcess(process_id)
-        self.processResults(rc, datas)
+        if self.hasOption('<process_id>'):
+            process_id = self.options['<process_id>']
+            rc, datas = self.bonita_client.getProcess(process_id)
+            self.processResults(rc, datas)
+        else:
+            rc, datas = self.bonita_client.getProcesses()
+            self.processResults(rc, datas)
 
     def enable(self):
         process_id = self.options['<process_id>']

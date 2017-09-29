@@ -14,7 +14,7 @@ class Packaging(Base):
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('generate'):
             self.generateDescriptor()
-        if self.hasOption('install'):
+        elif self.hasOption('install'):
             self.installDescriptor()
         else:
             print('Nothing to do.')
