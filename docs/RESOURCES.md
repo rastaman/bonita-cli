@@ -16,8 +16,9 @@ Miscellaneous links to the resources used to develop this program.
 - [Java Object Serialization Specification: 6 - Object Serialization Stream Protocol](http://docs.oracle.com/javase/7/docs/platform/serialization/spec/protocol.html)
 - [Issue 2857: Add "java modified utf-8" codec - Python tracker](https://bugs.python.org/issue2857)
 
-## Bonita REST API
+## Bonita APIs
 
 - [Bonita 7.5 - Multi-tenancy and tenant configuration](https://documentation.bonitasoft.com/?page=multi-tenancy-and-tenant-configuration) - Platform API
 - [Bonita 7.5 - portal API](https://documentation.bonitasoft.com/?page=portal-api) - Forms, pages, layouts...
 - [Is it possible to deploy a Bonita Application automatically ? (Organization and BDM specifically) | Bonitasoft Community](https://community.bonitasoft.com/questions-and-answers/it-possible-deploy-bonita-application-automatically-organization-and-bdm)
+- [Overview (Bonita BPM Engine 7.5 API)](https://documentation.bonitasoft.com/javadoc/api/7.5/overview-summary.html)

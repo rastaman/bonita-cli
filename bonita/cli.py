@@ -12,7 +12,7 @@ Usage:
   bonita packaging [generate <dist_folder> <descriptor_file>|install <dist_folder> <descriptor_file>]
   bonita organization [import <filename>|export|delete]
   bonita bdm [install <filename>|uninstall|cleanAndUninstall|get [version|clientZip <filename>]]
-  bonita profile [import <filename>|search [<criteria>]]
+  bonita profile [import <filename>|export <filename>|search [<criteria>]|merge <default_profiles> <custom_profiles> <output_profiles>]
   bonita -h | --help
   bonita --version
 

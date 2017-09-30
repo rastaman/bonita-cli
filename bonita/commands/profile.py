@@ -14,6 +14,10 @@ class Profile(Base):
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('import'):
             self.importProfiles()
+        elif self.hasOption('export'):
+            self.exportProfiles()
+        elif self.hasOption('merge'):
+            self.mergeProfiles()
         elif self.hasOption('search'):
             self.searchProfiles()
         else:
@@ -23,6 +27,18 @@ class Profile(Base):
         filename = self.options['<filename>']
         rc, datas = self.bonita_client.importProfiles(filename)
         self.processResults(rc, datas)
+
+    def exportProfiles(self):
+        filename = self.options['<filename>']
+        rc, datas = self.bonita_client.exportProfiles(filename)
+        self.processResults(rc, datas)
+
+    def mergeProfiles(self):
+        default_profiles = self.options['<default_profiles>']
+        custom_profiles = self.options['<custom_profiles>']
+        output_profiles = self.options['<output_profiles>']
+        rc = self.bonita_client.mergeProfiles(default_profiles, custom_profiles, output_profiles)
+        self.processResultCode(rc)
 
     def searchProfiles(self):
         criteria = self.options['<criteria>']

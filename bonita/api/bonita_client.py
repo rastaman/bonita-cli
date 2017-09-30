@@ -4,6 +4,7 @@ import os
 import javaobj
 import base64
 import glob
+from lxml import etree
 
 #import logging
 #import time
@@ -75,6 +76,13 @@ class BonitaClient:
     VALUE_BINARY_PARAMETER = """<object-stream>
   <object-array>
     <string>==ByteArray==</string>
+  </object-array>
+</object-stream>"""
+
+    VALUE_COMMAND_EMPTY_PARAMETER = """<object-stream>
+  <object-array>
+    <string>{}</string>
+    <map/>
   </object-array>
 </object-stream>"""
 
@@ -547,6 +555,28 @@ class BonitaClient:
 
     # Profile API
 
+    def mergeProfiles(self, defaultProfiles, customProfiles, outputProfiles):
+        defaultProfilesDoc = etree.parse(defaultProfiles)
+        customProfilesDoc = etree.parse(customProfiles)
+        PROFILES_NAMESPACE = "http://www.bonitasoft.org/ns/profile/6.1"
+        etree.register_namespace('profiles', PROFILES_NAMESPACE)
+        PROFILES = "{%s}" % PROFILES_NAMESPACE
+        profiles = etree.Element(PROFILES + "profiles") # lxml only!
+
+        root = defaultProfilesDoc.getroot()
+        print "Found %d default profiles" % len(root.findall("profile", root.nsmap))
+        for profile in root.findall("profile", root.nsmap):
+            profiles.append(profile)
+        root = customProfilesDoc.getroot()
+        print "Found %d custom profiles" % len(root.findall("profile", root.nsmap))
+        for profile in root.findall("profile", root.nsmap):
+            profiles.append(profile)
+
+        et = etree.ElementTree(profiles)
+        with open(outputProfiles, 'wb') as outputProfilesFile:
+            et.write(outputProfilesFile, pretty_print=True, xml_declaration=True,encoding='utf-8',method="xml")
+        return 200
+
     def importProfiles(self, profileFilename):
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
@@ -566,8 +596,8 @@ class BonitaClient:
             return self.formatResponse(r)
         return [-1, 'KO']
 
+    # Currently only the default profiles
     def exportProfiles(self, profileFilename):
-        # exportAllProfiles
         rc, raw_session = self.getSession()
         session = json.loads(raw_session)
         xmlSession = self.xmlSessionFromSession(session)
@@ -577,12 +607,13 @@ class BonitaClient:
         payload = {
             "options": xmlSession,
             "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
-            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+            "parametersValues": BonitaClient.VALUE_COMMAND_EMPTY_PARAMETER.format("exportDefaultProfilesCommand")
         }
         r = self.getInternalSession().post(url, data=payload, headers=headers)
 
         with open(profileFilename, 'wb') as profileFile:
-            profileFile.read(r.text)
+            xmlPayload = r.text.replace('</byte-array>','').replace('<byte-array>','').replace('</object-stream>','').replace('<object-stream>','').replace('\n','')
+            profileFile.write(base64.b64decode(xmlPayload))
             profileFile.close()
 
         return self.formatResponse(r)
@@ -660,8 +691,13 @@ class BonitaClient:
             rc, organizationPayload = self.importOrganization(
                 '%s/%s' % (dist_folder, descriptor['organization']))
             # Load profiles
-            rc, profilesPayload = self.importProfiles(
-                '%s/%s' % (dist_folder, descriptor['profiles']))
+
+            # Create the full profiles file
+            self.exportProfiles('/tmp/default-profiles.xml')
+            self.mergeProfiles('/tmp/default-profiles.xml', '%s/%s' % (dist_folder, descriptor['profiles']), '/tmp/all-profiles.xml')
+            # Load the full profiles
+            rc, profilesPayload = self.importProfiles('/tmp/all-profiles.xml')
+
             # Load process
             for p in descriptor['processes']:
                 rc, serverfile = self.upload(

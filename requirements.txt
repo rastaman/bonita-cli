@@ -1,3 +1,4 @@
 docopt
 https://github.com/rastaman/python-javaobj/archive/master.zip
 requests
+lxml
