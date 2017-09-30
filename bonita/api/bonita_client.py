@@ -566,6 +566,27 @@ class BonitaClient:
             return self.formatResponse(r)
         return [-1, 'KO']
 
+    def exportProfiles(self, profileFilename):
+        # exportAllProfiles
+        rc, raw_session = self.getSession()
+        session = json.loads(raw_session)
+        xmlSession = self.xmlSessionFromSession(session)
+        url = self.url + "/serverAPI/" + BonitaClient.API_COMMAND + "/" + "execute"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+        payload = {
+            "options": xmlSession,
+            "classNameParameters": BonitaClient.CLASSNAME_COMMAND_PARAMETER,
+            "parametersValues": BonitaClient.VALUE_NULL_PARAMETER
+        }
+        r = self.getInternalSession().post(url, data=payload, headers=headers)
+
+        with open(profileFilename, 'wb') as profileFile:
+            profileFile.read(r.text)
+            profileFile.close()
+
+        return self.formatResponse(r)
+
     def searchProfiles(self, criteria):
         if criteria is None:
             criteria = ""
@@ -656,5 +677,4 @@ class BonitaClient:
             rc, serverfile = self.upload(
                 'applications', '%s/%s' % (dist_folder, descriptor['application']))
             rc, result = self.importApplication(serverfile)
-            print result
         return 200
