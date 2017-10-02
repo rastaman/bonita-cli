@@ -563,20 +563,21 @@ class BonitaClient:
         PROFILES_NAMESPACE = "http://www.bonitasoft.org/ns/profile/6.1"
         etree.register_namespace('profiles', PROFILES_NAMESPACE)
         PROFILES = "{%s}" % PROFILES_NAMESPACE
-        profiles = etree.Element(PROFILES + "profiles") # lxml only!
+        profiles = etree.Element(PROFILES + "profiles")  # lxml only!
 
         root = defaultProfilesDoc.getroot()
-        #print "Found %d default profiles" % len(root.findall("profile", root.nsmap))
+        # print "Found %d default profiles" % len(root.findall("profile", root.nsmap))
         for profile in root.findall("profile", root.nsmap):
             profiles.append(profile)
         root = customProfilesDoc.getroot()
-        #print "Found %d custom profiles" % len(root.findall("profile", root.nsmap))
+        # print "Found %d custom profiles" % len(root.findall("profile", root.nsmap))
         for profile in root.findall("profile", root.nsmap):
             profiles.append(profile)
 
         et = etree.ElementTree(profiles)
         with open(outputProfiles, 'wb') as outputProfilesFile:
-            et.write(outputProfilesFile, pretty_print=True, xml_declaration=True,encoding='utf-8',method="xml")
+            et.write(outputProfilesFile, pretty_print=True,
+                     xml_declaration=True, encoding='utf-8', method="xml")
         return 200
 
     def importProfiles(self, profileFilename):
@@ -614,7 +615,8 @@ class BonitaClient:
         r = self.getInternalSession().post(url, data=payload, headers=headers)
 
         with open(profileFilename, 'wb') as profileFile:
-            xmlPayload = r.text.replace('</byte-array>','').replace('<byte-array>','').replace('</object-stream>','').replace('<object-stream>','').replace('\n','')
+            xmlPayload = r.text.replace('</byte-array>', '').replace('<byte-array>', '').replace(
+                '</object-stream>', '').replace('<object-stream>', '').replace('\n', '')
             profileFile.write(base64.b64decode(xmlPayload))
             profileFile.close()
 
@@ -696,7 +698,8 @@ class BonitaClient:
 
             # Create the full profiles file
             self.exportProfiles('/tmp/default-profiles.xml')
-            self.mergeProfiles('/tmp/default-profiles.xml', '%s/%s' % (dist_folder, descriptor['profiles']), '/tmp/all-profiles.xml')
+            self.mergeProfiles('/tmp/default-profiles.xml', '%s/%s' %
+                               (dist_folder, descriptor['profiles']), '/tmp/all-profiles.xml')
             # Load the full profiles
             rc, profilesPayload = self.importProfiles('/tmp/all-profiles.xml')
 
