@@ -5,7 +5,7 @@ from .base import Base
 from bonita.api.bonita_client import BonitaClient
 
 
-class Process(Base):
+class User(Base):
 
     """Manage user"""
 
