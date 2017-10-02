@@ -564,11 +564,11 @@ class BonitaClient:
         profiles = etree.Element(PROFILES + "profiles") # lxml only!
 
         root = defaultProfilesDoc.getroot()
-        print "Found %d default profiles" % len(root.findall("profile", root.nsmap))
+        #print "Found %d default profiles" % len(root.findall("profile", root.nsmap))
         for profile in root.findall("profile", root.nsmap):
             profiles.append(profile)
         root = customProfilesDoc.getroot()
-        print "Found %d custom profiles" % len(root.findall("profile", root.nsmap))
+        #print "Found %d custom profiles" % len(root.findall("profile", root.nsmap))
         for profile in root.findall("profile", root.nsmap):
             profiles.append(profile)
 
@@ -714,3 +714,28 @@ class BonitaClient:
                 'applications', '%s/%s' % (dist_folder, descriptor['application']))
             rc, result = self.importApplication(serverfile)
         return 200
+
+    # Users and group API
+
+    def addUser(self, login, password, firstName, lastName, title):
+        #r = self.getInternalSession().get(self.url + '/API/portal/page/' + page_id)
+        return self.formatResponse(r)
+
+    def updateUser(self, user_id, user_payload):
+        payload = json.dumps({'pageZip': server_filename})
+        headers = {'Content-Type': 'application/json'}
+        #r = self.getInternalSession().put(self.url + '/API/portal/page/' +
+        #                                  page_id, data=payload, headers=headers)
+        r =
+        return self.formatResponse(r)
+        
+        return
+
+    def removeUser(self, login):
+        return
+
+    def enableUser(self, login):
+        return
+
+    def disableUser(self, login):
+        return
