@@ -51,5 +51,11 @@ class Base(object):
     def hasOption(self, option):
         return option in self.options and self.options[option]
 
+    # Late coding
+    def getOption(self, option, defaultValue=None):
+        if self.hasOption(option):
+            return self.options[option]
+        return defaultValue
+
     def getResults(self):
         return self.results

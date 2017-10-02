@@ -13,6 +13,8 @@ Usage:
   bonita organization [import <filename>|export|delete]
   bonita bdm [install <filename>|uninstall|cleanAndUninstall|get [version|clientZip <filename>]]
   bonita profile [import <filename>|export <filename>|search [<criteria>]|merge <default_profiles> <custom_profiles> <output_profiles>]
+  bonita user [add <login> <password> [manager=<manager_id>]|get <user_id>|enable <user_id>|disable <user_id>|remove <user_id>]
+  bonita membership [add <user_id> <group_id> <role_id>|get <user_id>]
   bonita -h | --help
   bonita --version
 

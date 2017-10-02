@@ -5,18 +5,7 @@ import javaobj
 import base64
 import glob
 from lxml import etree
-
-#import logging
-#import time
-#
-# try:
-#     import http.client as http_client
-# except ImportError:
-#     import httplib as http_client
-#http_client.HTTPConnection.debuglevel = 1
-# logging.basicConfig(level=logging.DEBUG)
-#logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
-
+from pip._vendor.requests.api import head
 
 class BonitaClient:
 
@@ -156,6 +145,19 @@ class BonitaClient:
             self.url = configuration['url']
         self.session = None
         self.platform_session = None
+        self.enableLogging()
+
+    def enableLogging(self):
+        import logging
+        import time
+
+        try:
+            import http.client as http_client
+        except ImportError:
+            import httplib as http_client
+        http_client.HTTPConnection.debuglevel = 1
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug('--- %s ---', time.strftime("%H:%M:%S"))
 
     def getConfiguration(self):
         return self.configuration
@@ -335,7 +337,7 @@ class BonitaClient:
             'c': 200,
             's': ''
         }
-        r = self.getInternalSession().get(self.url + '/API/bpm/process?', params=params)
+        r = self.getInternalSession().get(self.url + '/API/bpm/process', params=params)
         return self.formatResponse(r)
 
     # Portal API
@@ -716,26 +718,62 @@ class BonitaClient:
         return 200
 
     # Users and group API
-
-    def addUser(self, login, password, firstName, lastName, title):
-        #r = self.getInternalSession().get(self.url + '/API/portal/page/' + page_id)
+    def addUser(self, user_payload):
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        r = self.getInternalSession().post(self.url + '/API/identity/user', headers=headers, data=json.dumps(user_payload))
         return self.formatResponse(r)
+
+    def addUserWithAttributes(self, login, password, icon="", firstName="", lastName="", title="", job_title="", manager_id=3 ):
+        payload = {
+            "userName":login,
+            "password":password,
+            "password_confirm":password,
+            "icon":icon,
+            "firstname":firstName,
+            "lastname":lastName,
+            "title":title,
+            "job_title":job_title,
+            "manager_id": manager_id
+        }
+        return self.addUser(payload)
 
     def updateUser(self, user_id, user_payload):
-        payload = json.dumps({'pageZip': server_filename})
-        headers = {'Content-Type': 'application/json'}
-        #r = self.getInternalSession().put(self.url + '/API/portal/page/' +
-        #                                  page_id, data=payload, headers=headers)
-        r =
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        r = self.getInternalSession().put(self.url + '/API/identity/user/' + user_id, data=json.dumps(user_payload), headers=headers)
         return self.formatResponse(r)
-        
-        return
 
-    def removeUser(self, login):
-        return
+    def getUser(self, user_id):
+        r = self.getInternalSession().get(self.url + '/API/identity/user/' + user_id)
+        return self.formatResponse(r)
 
-    def enableUser(self, login):
-        return
+    def deleteUser(self, user_id):
+        r = self.getInternalSession().delete(self.url + '/API/identity/user/' + user_id)
+        return self.formatResponse(r)
 
-    def disableUser(self, login):
-        return
+    def enableUser(self, user_id):
+        return self.updateUser(user_id, {'enabled': True})
+
+    def disableUser(self, user_id):
+        return self.updateUser(user_id, {'enabled': False})
+
+    def searchUsers(self):
+        r = self.getInternalSession().get(self.url + '/API/identity/user')
+        return self.formatResponse(r)
+
+    # Membership api
+
+    def addMembership(self, payload):
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        r = self.getInternalSession().post(self.url + '/API/identity/membership', params=json.dumps(payload), headers=headers)
+        return self.formatResponse(r)
+
+    def getMemberships(self, user_id):
+        params = { 'f': "user_id=" + user_id }
+        r = self.getInternalSession().get(self.url + '/API/identity/membership', params=params)
+        return self.formatResponse(r)
