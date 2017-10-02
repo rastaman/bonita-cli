@@ -536,7 +536,7 @@ class BonitaClient:
         content = r.content
         # Oups, it's not the zip file
         with open(filename, 'wb') as clientZipFile:
-            clientZipFile.write(base64.b64decode(content))
+            clientZipFile.write(content)
             clientZipFile.close()
         return self.formatResponse(r)
 
