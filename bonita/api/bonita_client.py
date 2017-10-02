@@ -758,13 +758,13 @@ class BonitaClient:
         return self.formatResponse(r)
 
     def enableUser(self, user_id):
-        return self.updateUser(user_id, {'enabled': True})
+        return self.updateUser(user_id, {'enabled': 'true'})
 
     def disableUser(self, user_id):
-        return self.updateUser(user_id, {'enabled': False})
+        return self.updateUser(user_id, {'enabled': 'false'})
 
-    def searchUsers(self):
-        r = self.getInternalSession().get(self.url + '/API/identity/user')
+    def searchUsers(self, search_options):
+        r = self.getInternalSession().get(self.url + '/API/identity/user', params=search_options)
         return self.formatResponse(r)
 
     # Membership api
@@ -773,10 +773,14 @@ class BonitaClient:
         headers = {
             'Content-Type': 'application/json'
         }
-        r = self.getInternalSession().post(self.url + '/API/identity/membership', params=json.dumps(payload), headers=headers)
+        r = self.getInternalSession().post(self.url + '/API/identity/membership', data=json.dumps(payload), headers=headers)
         return self.formatResponse(r)
 
     def getMemberships(self, user_id):
         params = { 'f': "user_id=" + user_id }
         r = self.getInternalSession().get(self.url + '/API/identity/membership', params=params)
+        return self.formatResponse(r)
+
+    def removeMembership(self, payload):
+        r = self.getInternalSession().delete(self.url + '/API/identity/membership/' + payload['user_id'] + '/' + payload['group_id'] + '/' + payload['role_id'])
         return self.formatResponse(r)

@@ -15,6 +15,8 @@ class Membership(Base):
             self.add()
         elif self.hasOption('get'):
             self.get()
+        elif self.hasOption('remove'):
+            self.remove()
 #        elif self.hasOption('update'):
 #            self.update()
 #        elif self.hasOption('remove'):
@@ -25,19 +27,28 @@ class Membership(Base):
     def add(self):
         payload = {
             'user_id': self.options['<user_id>'],
+            'group_id': self.options['<group_id>'],
+            'role_id': self.options['<role_id>']
         }
-        if self.hasOption('<role_id>'):
-            payload['role_id']=self.options['user_id']
-        if self.hasOption('<group_id>'):
-            payload['group_id']=self.options['group_id']
         rc, datas = self.bonita_client.addMembership(payload)
-        self.processResults(rc, datas)
+        return self.processResults(rc, datas)
 
     def get(self):
         user_id = self.options['<user_id>']
         rc, datas = self.bonita_client.getMemberships(user_id)
-        self.processResults(rc, datas)
+        return self.processResults(rc, datas)
 
+    # Delete a membership of a user using the group id and role id.#
+    def remove(self):
+        payload = {
+            'user_id': self.options['<user_id>'],
+            'group_id': self.options['<group_id>'],
+            'role_id': self.options['<role_id>']
+        }
+        rc, datas = self.bonita_client.removeMembership(payload)
+        return self.processResults(rc, datas)
+
+#DELETE
 #    def update(self):
 #        page_id = self.options['<page_id>']
 #        filename = self.options['<filename_on_server>']

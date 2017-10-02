@@ -49,7 +49,10 @@ class User(Base):
             rc, datas = self.bonita_client.getUser(user_id)
             self.processResults(rc, datas)
         else:
-            rc, datas = self.bonita_client.getUsers()
+            rc, datas = self.bonita_client.searchUsers({
+                'p':0,
+                'c':20
+            })
             self.processResults(rc, datas)
 
     def remove(self):
