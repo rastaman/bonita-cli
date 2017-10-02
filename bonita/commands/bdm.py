@@ -42,6 +42,6 @@ class BDM(Base):
             rc, datas = self.bonita_client.getBusinessDataModelVersion()
             self.processResults(rc, datas)
         elif self.hasOption('clientZip'):
-            filename = self.options['filename']
+            filename = self.options['<filename>']
             rc, datas = self.bonita_client.getClientBDMZip(filename)
             self.processResults(rc, datas)
