@@ -39,7 +39,7 @@ All commands::
   bonita -h | --help
   bonita --version
 ```
-  
+
 Examples::
 
     $ bonita session login http://myhost:8080/bonita myusername mypassword

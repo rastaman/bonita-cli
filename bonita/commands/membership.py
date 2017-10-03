@@ -48,7 +48,7 @@ class Membership(Base):
         rc, datas = self.bonita_client.removeMembership(payload)
         return self.processResults(rc, datas)
 
-#DELETE
+# DELETE
 #    def update(self):
 #        page_id = self.options['<page_id>']
 #        filename = self.options['<filename_on_server>']

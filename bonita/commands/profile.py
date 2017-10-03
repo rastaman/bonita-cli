@@ -37,7 +37,8 @@ class Profile(Base):
         default_profiles = self.options['<default_profiles>']
         custom_profiles = self.options['<custom_profiles>']
         output_profiles = self.options['<output_profiles>']
-        rc = self.bonita_client.mergeProfiles(default_profiles, custom_profiles, output_profiles)
+        rc = self.bonita_client.mergeProfiles(
+            default_profiles, custom_profiles, output_profiles)
         self.processResultCode(rc)
 
     def searchProfiles(self):

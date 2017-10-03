@@ -7,6 +7,7 @@ import glob
 from lxml import etree
 from pip._vendor.requests.api import head
 
+
 class BonitaClient:
 
     UPLOAD_TYPES = {
@@ -725,19 +726,20 @@ class BonitaClient:
         headers = {
             'Content-Type': 'application/json'
         }
-        r = self.getInternalSession().post(self.url + '/API/identity/user', headers=headers, data=json.dumps(user_payload))
+        r = self.getInternalSession().post(self.url + '/API/identity/user',
+                                           headers=headers, data=json.dumps(user_payload))
         return self.formatResponse(r)
 
-    def addUserWithAttributes(self, login, password, icon="", firstName="", lastName="", title="", job_title="", manager_id=3 ):
+    def addUserWithAttributes(self, login, password, icon="", firstName="", lastName="", title="", job_title="", manager_id=3):
         payload = {
-            "userName":login,
-            "password":password,
-            "password_confirm":password,
-            "icon":icon,
-            "firstname":firstName,
-            "lastname":lastName,
-            "title":title,
-            "job_title":job_title,
+            "userName": login,
+            "password": password,
+            "password_confirm": password,
+            "icon": icon,
+            "firstname": firstName,
+            "lastname": lastName,
+            "title": title,
+            "job_title": job_title,
             "manager_id": manager_id
         }
         return self.addUser(payload)
@@ -746,7 +748,8 @@ class BonitaClient:
         headers = {
             'Content-Type': 'application/json'
         }
-        r = self.getInternalSession().put(self.url + '/API/identity/user/' + user_id, data=json.dumps(user_payload), headers=headers)
+        r = self.getInternalSession().put(self.url + '/API/identity/user/' + user_id,
+                                          data=json.dumps(user_payload), headers=headers)
         return self.formatResponse(r)
 
     def getUser(self, user_id):
@@ -764,7 +767,8 @@ class BonitaClient:
         return self.updateUser(user_id, {'enabled': 'false'})
 
     def searchUsers(self, search_options):
-        r = self.getInternalSession().get(self.url + '/API/identity/user', params=search_options)
+        r = self.getInternalSession().get(
+            self.url + '/API/identity/user', params=search_options)
         return self.formatResponse(r)
 
     # Membership api
@@ -773,14 +777,17 @@ class BonitaClient:
         headers = {
             'Content-Type': 'application/json'
         }
-        r = self.getInternalSession().post(self.url + '/API/identity/membership', data=json.dumps(payload), headers=headers)
+        r = self.getInternalSession().post(self.url + '/API/identity/membership',
+                                           data=json.dumps(payload), headers=headers)
         return self.formatResponse(r)
 
     def getMemberships(self, user_id):
-        params = { 'f': "user_id=" + user_id }
-        r = self.getInternalSession().get(self.url + '/API/identity/membership', params=params)
+        params = {'f': "user_id=" + user_id}
+        r = self.getInternalSession().get(
+            self.url + '/API/identity/membership', params=params)
         return self.formatResponse(r)
 
     def removeMembership(self, payload):
-        r = self.getInternalSession().delete(self.url + '/API/identity/membership/' + payload['user_id'] + '/' + payload['group_id'] + '/' + payload['role_id'])
+        r = self.getInternalSession().delete(self.url + '/API/identity/membership/' +
+                                             payload['user_id'] + '/' + payload['group_id'] + '/' + payload['role_id'])
         return self.formatResponse(r)

@@ -15,7 +15,7 @@ class User(Base):
         self.bonita_client = BonitaClient(self.loadConfiguration())
         if self.hasOption('add'):
             self.add()
-        #if self.hasOption('update'):
+        # if self.hasOption('update'):
         #    self.add()
         elif self.hasOption('get'):
             self.get()
@@ -30,15 +30,15 @@ class User(Base):
 
     def add(self):
         payload = {
-            'userName':self.getOption("<login>"),
-            'password':self.getOption("<password>"),
-            'password_confirm':self.getOption("<password>"),
-            'icon':self.getOption("<icon>",""),
-            'firstName':self.getOption("<firstName>",""),
-            'lastName':self.getOption("<lastName>",""),
-            'title':self.getOption("<title>",""),
-            'job_title':self.getOption("<job_title>",""),
-            'manager_id':self.getOption("<manager_id>",0)
+            'userName': self.getOption("<login>"),
+            'password': self.getOption("<password>"),
+            'password_confirm': self.getOption("<password>"),
+            'icon': self.getOption("<icon>", ""),
+            'firstName': self.getOption("<firstName>", ""),
+            'lastName': self.getOption("<lastName>", ""),
+            'title': self.getOption("<title>", ""),
+            'job_title': self.getOption("<job_title>", ""),
+            'manager_id': self.getOption("<manager_id>", 0)
         }
         rc, datas = self.bonita_client.addUser(payload)
         self.processResults(rc, datas)
@@ -50,8 +50,8 @@ class User(Base):
             self.processResults(rc, datas)
         else:
             rc, datas = self.bonita_client.searchUsers({
-                'p':0,
-                'c':20
+                'p': 0,
+                'c': 20
             })
             self.processResults(rc, datas)
 
